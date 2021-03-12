@@ -1,0 +1,12 @@
+smoker
+cognitiveStatus2
+elEscorialAtDx
+FVCPercentAtDx
+weightAtDx_kg
+rateOfDeclineBMI_per_month
+anatomicalLevel_at_onset
+site_of_onset
+onset_side
+age_at_onset
+ALSFRS1
+firstALSFRS_daysIntoIllness 
