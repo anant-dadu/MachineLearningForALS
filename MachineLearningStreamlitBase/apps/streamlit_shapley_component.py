@@ -152,7 +152,10 @@ def app():
         with col5:
             shap.dependence_plot(feature_name, np.copy(shap_values), X.copy(), interaction_index=list(X.columns).index(list(X.columns)[inds[2]]))
             st.pyplot()
-    
+
+    labels_actual_new = np.array(labels_actual, dtype=np.float64)
+    y_pred = (shap_values.sum(1) + exval) > 0
+    misclassified = y_pred != labels_actual_new 
     st.write('## Decision Plots')
     st.write("""
         We selected 400 subsamples to understand the pathways of predictive modeling. SHAP decision plots show how complex models arrive at their predictions (i.e., how models make decisions). 
@@ -162,19 +165,16 @@ def app():
         Moving from the bottom of the plot to the top, SHAP values for each feature are added to the model’s base value. 
         This shows how each feature contributes to the overall prediction.
     """)
-    if st.checkbox("Show Decision Plots"):
         # labels_pred_new = np.array(labels_pred, dtype=np.float)
-        labels_actual_new = np.array(labels_actual, dtype=np.float64)
-        y_pred = (shap_values.sum(1) + exval) > 0
-        misclassified = y_pred != labels_actual_new
+        
     
-        import random
-        st.write(shap_values.shape)
-        select_random_samples = np.random.choice(shap_values.shape[0], 400)
+    import random
+    st.write(shap_values.shape)
+    select_random_samples = np.random.choice(shap_values.shape[0], 400)
 
-        new_X = X.iloc[select_random_samples]
-        new_shap_values = shap_values[select_random_samples,:]
-        new_labels_pred = np.array(labels_pred, dtype=np.float64)[select_random_samples] 
+    new_X = X.iloc[select_random_samples]
+    new_shap_values = shap_values[select_random_samples,:]
+    new_labels_pred = np.array(labels_pred, dtype=np.float64)[select_random_samples] 
 
 
     st.write('### Pathways for Prediction (Hierarchical Clustering)')
