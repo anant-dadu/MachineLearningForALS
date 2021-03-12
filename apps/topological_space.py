@@ -3,8 +3,8 @@ import pandas as pd
 import plotly.express as px
 
 def app():
-    umap_org = pd.read_csv('data/df_umap_org.csv', sep=',')
-    umap_rep = pd.read_csv('data/df_umap_rep.csv', sep=',')
+    umap_org = pd.read_csv('saved_models/df_umap_org.csv', sep=',')
+    umap_rep = pd.read_csv('saved_models/df_umap_rep.csv', sep=',')
     colorable_columns = ['clinicaltype_at_oneyear']
     select_color = st.selectbox('Select a color to visualize', colorable_columns, index=0)
     color_discrete_map = {}
