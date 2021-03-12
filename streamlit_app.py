@@ -14,7 +14,7 @@ st.set_option('deprecation.showPyplotGlobalUse', False)
 
 
 from MachineLearningStreamlitBase.multiapp import MultiApp
-from MachineLearningStreamlitBase.apps import streamlit_prediction_component, streamlit_shapley_component
+from MachineLearningStreamlitBase.apps import streamlit_prediction_component_multiclass, streamlit_shapley_component
 
 # add any app you like in apps directory
 from apps import topological_space
@@ -52,7 +52,7 @@ import copy
 st.title('Machine Learning for ALS') 
 
 app.add_app("Scientific background", streamlit_shapley_component.app)
-app.add_app("Predict Patient ALS Subtype", streamlit_prediction_component.app)
+app.add_app("Predict Patient ALS Subtype", streamlit_prediction_component_multiclass.app)
 ##TODO: Add any apps you like
 app.add_app("Explore the ALS subtype topological space", topological_space.app)
 app.run()
