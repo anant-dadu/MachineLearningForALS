@@ -15,7 +15,7 @@ import joblib
 import xgboost as xgb
 
 def app():
-    st.title("Model Perturbation Analysis")
+    st.write("## Model Perturbation Analysis")
     with open('saved_models/trainXGB_class_map.pkl', 'rb') as f:
         class_names = list(pickle.load(f))
     
@@ -45,18 +45,18 @@ def app():
         else:
             numerical_columns.append(col) 
     
-    st.write(categorical_columns, numerical_columns) 
+    st.write('### All Features')
+    st.write("***Categorical Columns:***", categorical_columns) 
+    st.write("***Numerical Columns:***", numerical_columns) 
     from collections import defaultdict
-    
     
     new_feature_input = defaultdict(list) 
     for key, val in col_dict_map.items():
         rval = {j:i for i,j in val.items()}
         X_new[key] = X_new[key].map(lambda x: rval.get(x, x))
     
-    st.subheader('Select feature values to see what-if analysis')
     st.write('--'*10)
-    
+    st.write('### Select feature values to see what-if analysis')
     col1, col2, col3, col4 = st.beta_columns(4)
     for i in range(0, len(categorical_columns), 4):
         with col1:
@@ -130,7 +130,7 @@ def app():
     
     col01, col02 = st.beta_columns(2)
     with col01:
-        st.subheader('Prediction on actual feature values')
+        st.write('### Prediction on actual feature values')
         st.code(X_new.loc[select_patient, :].fillna('X')) 
         predicted_prob = defaultdict(list)
         for key, val in M_dict.items():
@@ -150,7 +150,7 @@ def app():
         for key, val in col_dict_map.items():
             rval = {j:i for i,j in val.items()}
             ndfl[key] = ndfl[key].map(lambda x: rval.get(x, x))
-        st.subheader('Prediction on selected feature values')
+        st.write('### Prediction on selected feature values')
         st.code(ndfl.iloc[0].fillna('X'))
         dfl = dfl[X.columns].replace('X', np.nan)
         predicted_prob = defaultdict(list)
