@@ -158,7 +158,7 @@ def app():
         shap.force_plot(exval, shap_values_train, t1, show=False, matplotlib=True)
         st.pyplot()
         fig, ax = plt.subplots()
-        _ = shap.decision_plot(exval, shap_values_train, t2, link='logit', return_objects=True, new_base_value=0, highlight=0)
+        r = shap.decision_plot(exval, shap_values_train, t2, link='logit', return_objects=True, new_base_value=0, highlight=0)
         st.pyplot(fig)
 
     with col02:
@@ -187,5 +187,5 @@ def app():
         shap.force_plot(exval, shap_values_train, t1, show=False, matplotlib=True)
         st.pyplot()
         fig, ax = plt.subplots()
-        _ = shap.decision_plot(exval, shap_values_train, ndfl.fillna('X'), link='logit', return_objects=True, new_base_value=0, highlight=0)
+        _ = shap.decision_plot(exval, shap_values_train, ndfl.fillna('X'), link='logit', feature_order=r.feature_idx, return_objects=True, new_base_value=0, highlight=0)
         st.pyplot(fig)
