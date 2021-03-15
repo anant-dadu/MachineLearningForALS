@@ -15,6 +15,7 @@ import joblib
 import xgboost as xgb
 
 def app():
+    st.markdown("<font color='RED'>Discliamer: This predictive tool is only for research purposes</font>", unsafe_allow_html=True)
     st.write("## Model Perturbation Analysis")
     with open('saved_models/trainXGB_class_map.pkl', 'rb') as f:
         class_names = list(pickle.load(f))
@@ -32,8 +33,8 @@ def app():
     X.index = ids
     labels_pred =  list(train[3]['y_pred_test']) 
     labels_actual = list(train[3]['y_test']) 
-    select_patient = st.selectbox("Select the patient", list(X.index), index=0)
-    select_patient_index = ids.index(select_patient) 
+    # select_patient = st.selectbox("Select the patient", list(X.index), index=0)
+    # select_patient_index = ids.index(select_patient) 
     categorical_columns = []
     numerical_columns = []
     X_new = X.fillna('X')
@@ -44,18 +45,25 @@ def app():
         else:
             numerical_columns.append(col) 
     
-    st.write('### All Features')
-    st.write("***Categorical Columns:***", categorical_columns) 
-    st.write("***Numerical Columns:***", numerical_columns) 
+    st.write('### Please enter the following {} factors to perform prediction'.format(len(categorical_columns + numerical_columns)))
+    # st.write('### All Features')
+    # st.write("***Categorical Columns:***", categorical_columns) 
+    # st.write("***Numerical Columns:***", numerical_columns) 
+    if st.button("Random Patient"):
+        import random
+        select_patient = random.choice(list(X.index))
+    else:
+        select_patient = list(X.index)[0]
+
+    select_patient_index = ids.index(select_patient) 
     from collections import defaultdict
     new_feature_input = defaultdict(list) 
     for key, val in col_dict_map.items():
         rval = {j:i for i,j in val.items()}
         X_new[key] = X_new[key].map(lambda x: rval.get(x, x))
-    
-    st.write('### Select feature values to see what-if analysis')
+
     st.write('--'*10)
-    
+    st.write('##### Note: X denoted NA values')
     col1, col2, col3, col4 = st.beta_columns(4)
     for i in range(0, len(categorical_columns), 4):
         with col1:
@@ -136,14 +144,23 @@ def app():
         predicted_prob['predicted_probability'].append(M.predict(xgb.DMatrix(X.loc[select_patient, :].values.reshape(1, -1), feature_names=X.columns))[0])
         predicted_prob['classname'].append('Control')
         predicted_prob['predicted_probability'].append(1 - M.predict(xgb.DMatrix(X.loc[select_patient, :].values.reshape(1, -1), feature_names=X.columns))[0])
-        fig = px.pie(pd.DataFrame(predicted_prob), values='predicted_probability', names='classname', color='classname', color_discrete_map=color_discrete_map)
-        fig.update_layout(legend=dict(
-                yanchor="top",
-                y=0.99,
-                xanchor="left",
-                x=-0.05
-            ))
+        fig = px.bar(pd.DataFrame(predicted_prob), y='predicted_probability', x=sorted(list(predicted_prob['classname'])))
         st.plotly_chart(fig)
+        st.write('#### Trajectory for Predicted Class')
+        with open('saved_models/trainXGB_gpu_{}.data'.format(select_classname), 'rb') as f:
+            new_train = pickle.load(f)
+        
+        exval = new_train[2]['explainer_train'] 
+        explainer_train = shap.TreeExplainer(M)
+        t1 = pd.DataFrame(X.loc[select_patient, :]).T
+        t2 = pd.DataFrame(X_new.loc[select_patient, :].fillna('X')).T
+        shap_values_train = explainer_train.shap_values(t1)
+        shap.force_plot(exval, shap_values_train, t1, show=False, matplotlib=True)
+        st.pyplot()
+        fig, ax = plt.subplots()
+        _ = shap.decision_plot(exval, shap_values_train, t2, link='logit', return_objects=True, new_base_value=0, highlight=0)
+        st.pyplot(fig)
+
     with col02:
         dfl = pd.DataFrame(new_feature_input)
         ndfl = dfl.copy()
@@ -158,11 +175,17 @@ def app():
         predicted_prob['predicted_probability'].append(M.predict(xgb.DMatrix(dfl.iloc[0, :].values.reshape(1, -1), feature_names=dfl.columns))[0])
         predicted_prob['classname'].append('Control')
         predicted_prob['predicted_probability'].append(1 - M.predict(xgb.DMatrix(dfl.iloc[0, :].values.reshape(1, -1), feature_names=dfl.columns))[0])
-        fig = px.pie(pd.DataFrame(predicted_prob), values='predicted_probability', names='classname', color='classname', color_discrete_map=color_discrete_map)
-        fig.update_layout(legend=dict(
-                yanchor="top",
-                y=0.99,
-                xanchor="right",
-                x=1.05
-            ))
+        fig = px.bar(pd.DataFrame(predicted_prob), y='predicted_probability', x=sorted(list(predicted_prob['classname'])))
         st.plotly_chart(fig)
+        st.write('#### Trajectory for Predicted Class')
+        with open('saved_models/trainXGB_gpu_{}.data'.format(select_classname), 'rb') as f:
+            new_train = pickle.load(f)
+        exval = new_train[2]['explainer_train'] 
+        explainer_train = shap.TreeExplainer(M)
+        t1 = dfl.copy() 
+        shap_values_train = explainer_train.shap_values(t1)
+        shap.force_plot(exval, shap_values_train, t1, show=False, matplotlib=True)
+        st.pyplot()
+        fig, ax = plt.subplots()
+        _ = shap.decision_plot(exval, shap_values_train, ndfl.fillna('X'), link='logit', return_objects=True, new_base_value=0, highlight=0)
+        st.pyplot(fig)

@@ -50,9 +50,9 @@ import copy
 
 ##TODO: UPDATE TITLE
 st.title('Machine Learning for ALS') 
-
-app.add_app("Scientific background", streamlit_shapley_component.app)
 app.add_app("Predict Patient ALS Subtype", streamlit_prediction_component_multiclass.app)
+app.add_app("Scientific background", streamlit_shapley_component.app)
 ##TODO: Add any apps you like
 app.add_app("Explore the ALS subtype topological space", topological_space.app)
 app.run()
+

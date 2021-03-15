@@ -40,8 +40,9 @@ class MultiApp:
 
     def run(self):
         # app = st.sidebar.radio(
-        app = st.selectbox(
-            'Navigation',
+        st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+        app = st.radio(
+            '',
             self.apps,
             format_func=lambda app: app['title'])
 
