@@ -3,8 +3,8 @@ import pandas as pd
 import plotly.express as px
 
 def app():
-    umap_org_full = pd.read_csv('saved_models/df_umap_org.csv', sep=',')
-    umap_rep_full = pd.read_csv('saved_models/df_umap_rep.csv', sep=',')
+    umap_org_full = pd.read_csv('saved_models/ALS_NN_umap_org.csv', sep=',')
+    umap_rep_full = pd.read_csv('saved_models/ALS_NN_umap_rep.csv', sep=',')
     colorable_columns = ['clinicaltype_at_oneyear', 'clinicaltype_at_onset', 'initial_dx_was_PLS',
                         'mutationPresent', 'cognitiveStatus1', 'cognitiveImpairmentPresent', 'PEGinserted', 'BIPAP']
     colorable_columns = list(set(colorable_columns).intersection(set(list(umap_rep_full.columns))))
