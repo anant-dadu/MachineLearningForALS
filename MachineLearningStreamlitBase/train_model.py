@@ -78,6 +78,25 @@ def calculate_roc_auc_score_multiclass(y_pred, y_true, type_true='1d'):
     micro_auc_score = metrics.roc_auc_score(y_true, y_pred, average='micro')
     return auc, micro_auc_score
 
+def calculate_roc_auc_eval(y_pred, y_true):
+        # print (y_pred.shape, y_true.shape)
+        mlb = MultiLabelBinarizer()
+        y_true = mlb.fit_transform([(str(int(i))) for i in y_true])
+        auc = []
+        for c in range(y_pred.shape[1]):
+            y_class_true = y_true[:, c]
+            auc.append(metrics.roc_auc_score(y_class_true, y_pred[:, c]))
+        return 1 - np.mean(auc)
+
+def calculate_roc_auc_eval_xgb(y_pred, dtrain):
+        y_true = list(dtrain.get_label())
+        mlb = MultiLabelBinarizer()
+        y_true = mlb.fit_transform([(str(int(i))) for i in y_true])
+        auc = []
+        for c in range(y_pred.shape[1]):
+            y_class_true = y_true[:, c]
+            auc.append(metrics.roc_auc_score(y_class_true, y_pred[:, c]))
+        return "my-auc-error", 1 - np.mean(auc)
 
 class generateFullData:
 
@@ -202,7 +221,7 @@ class generateFullData:
 
     def trainXGBModel_multiclass(self, data, feature_names, label_name, replication_set=None):
         logger.info('Training starts...')
-        X_train, X_valid, y_train, y_valid = train_test_split(data, data[label_name] , test_size=0.05, random_state=42)
+        X_train, X_valid, y_train, y_valid = train_test_split(data, data[label_name] , test_size=0.3, random_state=42)
         if replication_set is not None:
             X_train = data.copy()
             y_train = data[label_name].copy()
@@ -216,21 +235,81 @@ class generateFullData:
         X_train = X_train[feature_names].copy()
         X_valid = X_valid[feature_names].copy()
         num_round = 500
-        param = {
-            'objective':'multi:softprob',
-            "eta": 0.05,
-            "max_depth": 10,
-            "tree_method": "gpu_hist",
-            "num_class": 6,
-            # "disable_default_eval_metric": 1
+#=======================================
+        params_d = {
+            "default":{
+                'objective':'multi:softprob',
+                "eta": 0.01,
+                "max_depth": 10,
+                "tree_method": "gpu_hist",
+                "gamma": 1,
+                "min_child_weight": 5,
+                "max_delta_step": 4,
+                "lambda": 0.1,
+                "eval_metric": "mlogloss",
+                "num_class": 6,
+            },
+            'block1':{
+            'objective': ['multi:softprob'],
+            "eta": [0.01, 0.05],
+            "max_depth": [3, 5, 10],
+            "tree_method": ["gpu_hist"],
+            "gamma": [0, 1],
+            "min_child_weight": [2, 5],
+            # "max_delta_step": [2, 4],
+            # "lambda": [0.1, 0.5, 2],
+            "eval_metric": ["mlogloss"],
+            },
+            'block2':{
+                "max_delta_step": [2, 4],
+                "lambda": [0.1, 0.5, 2],
+            }
+            
         }
+        params = list(parameters_generator(params_d))
+        param = params[0]
         # GPU accelerated training
+        X_train_train, X_train_valid, y_train_train, y_train_valid = train_test_split(X_train, y_train, test_size=0.2, random_state=42) 
+        # X_train_valid = train_test_split(X_train, y_train, test_size=0.3, random_state=42) 
         dtrain = xgb.DMatrix(X_train, label=y_train, feature_names=feature_names)
+        dtrain_train = xgb.DMatrix(X_train_train, label=y_train_train, feature_names=feature_names)
+        dtrain_val = xgb.DMatrix(X_train_valid, label=y_train_valid, feature_names=feature_names)
         dtest = xgb.DMatrix(X_valid, label=y_valid, feature_names=feature_names)
-        eval_set = [(dtest, 'eval')]
+        # deval = xgb.DMatrix(pd.concat([X_train.iloc[:300, :], X_valid], axis=0), label=pd.concat([y_train.iloc[:300, :], y_valid], axis=0), feature_names=feature_names) 
+        eval_set = [(dtrain_val, 'eval')]
         logger.info('Data loaded! Model training starts...')
-        model = xgb.train(param, dtrain,num_round, evals=eval_set, verbose_eval=True, early_stopping_rounds=10)
+        model = None
+        import copy
+        max_val = -1
+        print ('*'*100)
+        for e, param in enumerate(params):
+            model_temp = xgb.train(param, dtrain_train, num_round, feval=calculate_roc_auc_eval_xgb, evals=eval_set, verbose_eval=False, early_stopping_rounds=10)
+            y_pred_test = model_temp.predict(dtest)
+            y_pred_train = model_temp.predict(dtrain_train)
+            y_pred_val = model_temp.predict(dtrain_val)
+            print ('='*50, e)
+            print ('Train:', np.mean(calculate_roc_auc_score_multiclass(y_pred_train, y_train_train )[0]) )
+            print ('Valid:', np.mean(calculate_roc_auc_score_multiclass(y_pred_val, y_train_valid)[0]) )
+            print ('Test:', np.mean(calculate_roc_auc_score_multiclass(y_pred_test, y_valid)[0]) )
+            print ('='*50)
+            # sc = calculate_roc_auc_score_multiclass(y_pred_val, y_train_valid )[-1]
+            sc = np.mean(calculate_roc_auc_score_multiclass(y_pred_val, y_train_valid)[0])
+            if sc > max_val:
+                max_val = sc
+                model = copy.copy(model_temp)
+
+
+
+#=======================================
+        # GPU accelerated training
+        # dtrain = xgb.DMatrix(X_train, label=y_train, feature_names=feature_names)
+        # dtest = xgb.DMatrix(X_valid, label=y_valid, feature_names=feature_names)
+        # eval_set = [(dtest, 'eval')]
+        # logger.info('Data loaded! Model training starts...')
+        # model = xgb.train(param, dtrain,num_round, evals=eval_set, verbose_eval=True, early_stopping_rounds=10)
         # model = xgb.train(param, dtrain,num_round)
+#==========================================
+        import sys; sys.exit()
         logger.info('Model trained! Shap Values Prediction starts...')
         model.set_param({"predictor": "gpu_predictor"})
         explainer_train = shap.TreeExplainer(model)
