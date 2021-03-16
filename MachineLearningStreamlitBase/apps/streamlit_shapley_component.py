@@ -93,7 +93,7 @@ def app():
         st.info ('Total Samples: {} (Discovey: {}, Replication: {})'.format(X.shape[0], len_train, len_test))
     
     with col00:
-        st.write("### XGBoost Model Performance")
+        st.write("### ML Model Performance")
         st.info ('AUC Discovery Cohort: {}'.format(round(auc_train,2)))
         st.info ('AUC Replication Cohort: {}'.format( round(auc_test,2)))
     
