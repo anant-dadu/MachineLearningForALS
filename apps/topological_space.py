@@ -4,10 +4,10 @@ import plotly.express as px
 
 def app():
     st.write("## Topological Space for ALS Subtypes using Semi-supervised Approach")
-    original_data = pd.read_csv("data/scriptToWrangleJessicaDataFreeze5/ALSregistry.AdrianoChio.wrangled.nodates.freeze5.csv")
+    original_data = pd.read_csv("saved_models/ALSregistry.AdrianoChio.wrangled.nodates.freeze5.csv")
     umap_org_full = pd.read_csv('saved_models/ALS_NN_umap_org.csv', sep=',')
     umap_org_full = pd.merge(original_data, umap_org_full, left_on='number', right_on='number')
-    replication_data = pd.read_csv("data/scriptToWrangleJessicaDataFreeze5/ALSregistry.JessicaMandrioli.wrangled.nodates.freeze5.csv")
+    replication_data = pd.read_csv("saved_models/ALSregistry.JessicaMandrioli.wrangled.nodates.freeze5.csv")
     umap_rep_full = pd.read_csv('saved_models/ALS_NN_umap_rep.csv', sep=',')
     umap_rep_full = pd.merge(original_data, umap_rep_full, left_on='number', right_on='number')
     colorable_columns_maps ={
