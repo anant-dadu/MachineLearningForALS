@@ -49,6 +49,7 @@ def app():
     def get_shapley_value_data(train, replication=True, dict_map_result={}):
         dataset_type = '' 
         shap_values = np.concatenate([train[0]['shap_values_train'], train[0]['shap_values_test']], axis=0)
+        # shap_values = train[0]['shap_values_train']
         X = pd.concat([train[1]['X_train'], train[1]['X_valid']], axis=0)
         exval = train[2]['explainer_train'] 
         auc_train = train[3]['AUC_train']
@@ -72,47 +73,33 @@ def app():
         We used the one-vs-rest technique for multiclass classification. Based on that, we trained a separate binary classification model for each class.
         """
     )
-    st.write("## Results")
-    st.write("### Performance of Surrogate Model")
-    st.table(df_res.set_index('class name'))
-    st.write("#### Select the positive class")
-    feature_set_my = st.radio( "", class_names, index=0)
-    
+    feature_set_my = class_names[0]
     with open('saved_models/trainXGB_gpu_{}.data'.format(feature_set_my), 'rb') as f:
         train = pickle.load(f)
-     
     data_load_state = st.text('Loading data...')
     cloned_output = copy.deepcopy(get_shapley_value_data(train, replication=replication_avail, dict_map_result=dict_map_result))
     data_load_state.text("Done Data Loading! (using st.cache)")
     X, shap_values, exval, patient_index, auc_train, auc_test, labels_actual, labels_pred, shap_values_up, len_train, len_test = cloned_output 
     
-    col0, col00 = st.beta_columns(2)
-    with col0:
-        st.write("### Data Statistics")
-        st.info ('Total Features: {}'.format(X.shape[1]))
-        st.info ('Total Samples: {} (Discovey: {}, Replication: {})'.format(X.shape[0], len_train, len_test))
+
+    st.write("## Results")
+    st.write("### Performance of Surrogate Model")
+    st.table(df_res.set_index('class name'))
     
-    with col00:
-        st.write("### ML Model Performance")
-        st.info ('AUC Discovery Cohort: {}'.format(round(auc_train,2)))
-        st.info ('AUC Replication Cohort: {}'.format( round(auc_test,2)))
+     
     
+    shap_values_list = []
+    for classname in class_names: 
+        with open('saved_models/trainXGB_gpu_{}.data'.format(classname), 'rb') as f:
+            train_temp = pickle.load(f)
+            shap_values_list.append(np.concatenate([train_temp[0]['shap_values_train'], train_temp[0]['shap_values_test']], axis=0))
+    shap_values = np.mean(shap_values_list, axis=0) 
+
     
     import sklearn
     # st.write(sum(labels_actual[:len_train]), sum(np.array(labels_pred[:len_train])>0.5))
     # st.write(sum(labels_actual[len_train:]), sum(np.array(labels_pred[len_train:])>0.5))
-    col01, col02 = st.beta_columns(2)
-    with col01:
-        st.write("### Discovery Cohort Confusion Matrix")
-        Z = sklearn.metrics.confusion_matrix(labels_actual[:len_train], np.array(labels_pred[:len_train])>0.5)
-        Z_df = pd.DataFrame(Z, columns=['Predicted 0', 'Predicted 1'], index= ['Actual 0', 'Actual 1'])
-        st.table(Z_df)
     
-    with col02:
-        st.write("### Replication Cohort Confusion Matrix")
-        Z = sklearn.metrics.confusion_matrix(labels_actual[len_train:], np.array(labels_pred[len_train:])>0.5)
-        Z_df = pd.DataFrame(Z, columns=['Predicted 0', 'Predicted 1'], index= ['Actual 0', 'Actual 1'])
-        st.table(Z_df)
         
     st.write('## Summary Plot')
     st.write("""Shows top-11 features that have the most significant impact on the classification model.""")
@@ -166,9 +153,7 @@ def app():
             shap.dependence_plot(feature_name, np.copy(shap_values), X.copy(), interaction_index=list(X.columns).index(list(X.columns)[inds[2]]))
             st.pyplot()
 
-    labels_actual_new = np.array(labels_actual, dtype=np.float64)
-    y_pred = (shap_values.sum(1) + exval) > 0
-    misclassified = y_pred != labels_actual_new 
+    
     st.write('## Decision Plots')
     st.write("""
         We selected 400 subsamples to understand the pathways of predictive modeling. SHAP decision plots show how complex models arrive at their predictions (i.e., how models make decisions). 
@@ -259,22 +244,60 @@ def app():
                    sh = np.copy(new_shap_values)[new_labels_pred <= 0.05, :]
             shap.decision_plot(exval, sh, T, show=False, link='logit', feature_order=r.feature_idx, new_base_value=0)
             st.pyplot(fig)
+
+    st.write('## Statistics for Individual Classes') 
+    st.write("#### Select the class")
+    feature_set_my = st.selectbox("", ['Select']+ class_names, index=0) 
+    if not feature_set_my== "Select": 
+        with open('saved_models/trainXGB_gpu_{}.data'.format(feature_set_my), 'rb') as f:
+            train = pickle.load(f)
+        data_load_state = st.text('Loading data...')
+        cloned_output = copy.deepcopy(get_shapley_value_data(train, replication=replication_avail, dict_map_result=dict_map_result))
+        data_load_state.text("Done Data Loading! (using st.cache)")
+        X, shap_values, exval, patient_index, auc_train, auc_test, labels_actual, labels_pred, shap_values_up, len_train, len_test = cloned_output 
+        col0, col00 = st.beta_columns(2)
+        with col0:
+            st.write("### Data Statistics")
+            st.info ('Total Features: {}'.format(X.shape[1]))
+            st.info ('Total Samples: {} (Discovey: {}, Replication: {})'.format(X.shape[0], len_train, len_test))
     
-    st.write('### Pathways for Misclassified Samples')
-    if misclassified[len_train:].sum() == 0:
-        st.info('No Misclassified Examples!!!')
-    elif st.checkbox("Show Misclassifies Pathways"):
-        col6, col7 = st.beta_columns(2)
-        with col6:
-            st.info('Misclassifications (test): {}/{}'.format(misclassified[len_train:].sum(), len_test))
-            fig, ax = plt.subplots()
-            r = shap.decision_plot(exval, shap_values[misclassified], list(X.columns), link='logit', return_objects=True, new_base_value=0)
-            st.pyplot(fig)
-        with col7:
-            # st.info('Single Example')
-            sel_patients = [patient_index[e] for e, i in enumerate(misclassified) if i==1]
-            select_pats = st.selectbox('Select random misclassified patient', options=list(sel_patients))
-            id_sel_pats = sel_patients.index(select_pats)
-            fig, ax = plt.subplots()
-            shap.decision_plot(exval, shap_values[misclassified][id_sel_pats], X.iloc[misclassified,:].iloc[id_sel_pats], link='logit', feature_order=r.feature_idx, highlight=0, new_base_value=0)
-            st.pyplot()
+        with col00:
+            st.write("### ML Model Performance")
+            st.info ('AUC Discovery Cohort: {}'.format(round(auc_train,2)))
+            st.info ('AUC Replication Cohort: {}'.format( round(auc_test,2)))
+
+        col01, col02 = st.beta_columns(2)
+        with col01:
+            st.write("### Discovery Cohort Confusion Matrix")
+            Z = sklearn.metrics.confusion_matrix(labels_actual[:len_train], np.array(labels_pred[:len_train])>0.5)
+            Z_df = pd.DataFrame(Z, columns=['Predicted 0', 'Predicted 1'], index= ['Actual 0', 'Actual 1'])
+            st.table(Z_df)
+    
+        with col02:
+            st.write("### Replication Cohort Confusion Matrix")
+            Z = sklearn.metrics.confusion_matrix(labels_actual[len_train:], np.array(labels_pred[len_train:])>0.5)
+            Z_df = pd.DataFrame(Z, columns=['Predicted 0', 'Predicted 1'], index= ['Actual 0', 'Actual 1'])
+            st.table(Z_df)
+        
+        labels_actual_new = np.array(labels_actual, dtype=np.float64)
+        y_pred = (shap_values.sum(1) + exval) > 0
+        misclassified = y_pred != labels_actual_new 
+
+        st.write('### Pathways for Misclassified Samples')
+        if misclassified[len_train:].sum() == 0:
+            st.info('No Misclassified Examples!!!')
+        elif st.checkbox("Show Misclassifies Pathways"):
+            col6, col7 = st.beta_columns(2)
+            with col6:
+                st.info('Misclassifications (test): {}/{}'.format(misclassified[len_train:].sum(), len_test))
+                fig, ax = plt.subplots()
+                r = shap.decision_plot(exval, shap_values[misclassified], list(X.columns), link='logit', return_objects=True, new_base_value=0)
+                st.pyplot(fig)
+            with col7:
+                # st.info('Single Example')
+                sel_patients = [patient_index[e] for e, i in enumerate(misclassified) if i==1]
+                select_pats = st.selectbox('Select random misclassified patient', options=list(sel_patients))
+                id_sel_pats = sel_patients.index(select_pats)
+                fig, ax = plt.subplots()
+                shap.decision_plot(exval, shap_values[misclassified][id_sel_pats], X.iloc[misclassified,:].iloc[id_sel_pats], link='logit', feature_order=r.feature_idx, highlight=0, new_base_value=0)
+                st.pyplot()

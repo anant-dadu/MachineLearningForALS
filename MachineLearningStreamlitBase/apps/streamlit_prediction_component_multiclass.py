@@ -178,19 +178,31 @@ def app():
             if predicted_prob['predicted_probability'][-1] > max_val:
                 predicted_class = key
                 max_val = predicted_prob['predicted_probability'][-1] 
-
-        fig = px.bar(pd.DataFrame(predicted_prob), y='predicted_probability', x=sorted(list(predicted_prob['classname'])), width=500, height=400)
-        fig.update_layout(
-            xaxis_title="Class Labels",
-            yaxis_title="Predicted Probability",
-            font=dict(
-                family="Courier New, monospace",
-                size=12,
-                color="RebeccaPurple"
-            ),
-            margin=dict(l=10, r=10, t=10, b=10),
-        )
-        st.plotly_chart(fig)
+        K = pd.DataFrame(predicted_prob)
+        K['predicted_probability'] = K['predicted_probability'] / K['predicted_probability'].sum()
+        K['color'] = ['zed' if i==predicted_class else 'red' for i in list(predicted_prob['classname']) ]
+        # fig = px.bar(K, x='predicted_probability', y='classname', color='color', width=500, height=400, orientation='h')
+        # # fig = px.bar(K, y='predicted_probability', x=sorted(list(predicted_prob['classname'])), width=500, height=400)
+        # fig.update_layout(
+        #     legend=None,
+        #     yaxis_title="Class Labels",
+        #     xaxis_title="Predicted Probability",
+        #     font=dict(
+        #         family="Courier New, monospace",
+        #         size=12,
+        #         color="RebeccaPurple"
+        #     ),
+        #     margin=dict(l=10, r=10, t=10, b=10),
+        # )
+        # st.plotly_chart(fig)
+        import altair as alt
+        K = K.rename(columns={"classname": "Class Labels", "predicted_probability": "Predicted Probability"})
+        f = alt.Chart(K).mark_bar().encode(
+                    y='Class Labels:N',
+                    x='Predicted Probability:Q',
+                    color=alt.Color('color', legend=None),
+                ).properties(width=500, height=300)
+        st.write(f)
         # st.write('#### Trajectory for Predicted Class')
         st.write('#### Model Output Trajectory for {} Class using SHAP values'.format(predicted_class))
         with open('saved_models/trainXGB_gpu_{}.data'.format(predicted_class), 'rb') as f:
@@ -237,19 +249,31 @@ def app():
                 if predicted_prob['predicted_probability'][-1] > max_val:
                     predicted_class = key
                     max_val = predicted_prob['predicted_probability'][-1] 
-
-            fig = px.bar(pd.DataFrame(predicted_prob), y='predicted_probability', x=sorted(list(predicted_prob['classname'])), width=500, height=400)
-            fig.update_layout(
-            xaxis_title="Class Labels",
-            yaxis_title="Predicted Probability",
-            font=dict(
-                family="Courier New, monospace",
-                size=12,
-                color="RebeccaPurple"
-            ),
-            margin=dict(l=10, r=10, t=10, b=10),
-            )  
-            st.plotly_chart(fig)
+            K = pd.DataFrame(predicted_prob)
+            K['predicted_probability'] = K['predicted_probability'] / K['predicted_probability'].sum()
+            K['color'] = ['zed' if i==predicted_class else 'red' for i in list(predicted_prob['classname']) ]
+            import altair as alt
+            K = K.rename(columns={"classname": "Class Labels", "predicted_probability": "Predicted Probability"})
+            f = alt.Chart(K).mark_bar().encode(
+                    y='Class Labels:N',
+                    x='Predicted Probability:Q',
+                    color=alt.Color('color', legend=None),
+                ).properties( width=500, height=300)
+            st.write(f)
+            # fig = px.bar(K, x='predicted_probability', y='classname', color='color', width=500, height=400, orientation='h')
+            # # fig = px.bar(K, y='predicted_probability', x=sorted(list(predicted_prob['classname'])), width=500, height=400)
+            # fig.update_layout(
+            # legend=None,
+            # yaxis_title="Class Labels",
+            # xaxis_title="Predicted Probability",
+            # font=dict(
+            #     family="Courier New, monospace",
+            #     size=12,
+            #     color="RebeccaPurple"
+            # ),
+            # margin=dict(l=10, r=10, t=10, b=10),
+            # )  
+            # st.plotly_chart(fig)
             st.write('#### Model Output Trajectory for {} Class using SHAP values'.format(predicted_class))
             with open('saved_models/trainXGB_gpu_{}.data'.format(predicted_class), 'rb') as f:
                 new_train = pickle.load(f)

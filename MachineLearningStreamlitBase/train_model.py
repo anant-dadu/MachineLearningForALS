@@ -139,7 +139,7 @@ class generateFullData:
             "max_depth": [3, 5, 10],
             "tree_method": ["gpu_hist"],
             "gamma": [0, 1],
-            "min_child_weight": [2, 5],
+            "min_child_weight": [10],
             # "max_delta_step": [2, 4],
             # "lambda": [0.1, 0.5, 2],
             "eval_metric": ["auc"],
@@ -148,6 +148,20 @@ class generateFullData:
             },
             
         }
+        # params_d = {
+        #     "default":{
+        #         'objective': 'binary:logistic',
+        #         "eta": 0.05,
+        #         "tree_method": "gpu_hist",
+        #         "eval_metric": "logloss",
+        #     },
+        #     'block1':{
+        #     'objective': ['binary:logistic'],
+        #     "eta": [0.05],
+        #     "tree_method": ["gpu_hist"],
+        #     },
+        #     
+        # } 
         params = list(parameters_generator(params_d))
         param = params[0]
         # GPU accelerated training
@@ -165,7 +179,7 @@ class generateFullData:
         max_val = -1
         print ('*'*100)
         for e, param in enumerate(params):
-            model_temp = xgb.train(param, dtrain_train, num_round, feval=calculate_roc_auc_eval_xgb_binary, evals=eval_set, verbose_eval=False, early_stopping_rounds=10)
+            model_temp = xgb.train(param, dtrain_train, num_round, feval=calculate_roc_auc_eval_xgb_binary, evals=eval_set, verbose_eval=False, early_stopping_rounds=20)
             y_pred_test = model_temp.predict(dtest)
             y_pred_train = model_temp.predict(dtrain_train)
             y_pred_val = model_temp.predict(dtrain_val)

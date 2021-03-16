@@ -36,20 +36,50 @@ def app():
         col1, col2 = st.beta_columns(2)
         with col1:
             st.write('### Discovery Cohort')
-            fig = px.scatter_3d(umap_org, x='UMAP_3_1', y='UMAP_3_2', z='UMAP_3_3', color=select_color, color_discrete_map=color_discrete_map, opacity=0.7, size_max=12, height=400, width=500)
+            fig = px.scatter_3d(umap_org, x='UMAP_3_1', y='UMAP_3_2', z='UMAP_3_3', color=select_color, color_discrete_map=color_discrete_map, opacity=1, size=[4]*len(umap_org), height=600, width=600)
+            fig.layout.update(showlegend=False)
+            # fig.update_layout(legend=dict(
+            #     orientation="h",
+            #     yanchor="bottom",
+            #     y=1.02,
+            #     xanchor="right",
+            #     x=1
+            # ))
             st.plotly_chart(fig, use_container_width=True)
         with col2:
             st.write('### Replication Cohort')
-            fig = px.scatter_3d(umap_rep, x='UMAP_3_1', y='UMAP_3_2', z='UMAP_3_3', color=select_color, color_discrete_map=color_discrete_map,  opacity=0.7, size_max=12, height=400, width=500)
+            fig = px.scatter_3d(umap_rep, x='UMAP_3_1', y='UMAP_3_2', z='UMAP_3_3', color=select_color, color_discrete_map=color_discrete_map,  opacity=1, size=[4]*len(umap_rep), height=600, width=600)
+            fig.update_layout(legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+                ))
             st.plotly_chart(fig, use_container_width=True)
     else:
         col1, col2 = st.beta_columns(2)
         with col1:
             st.write('### Discovery Cohort')
-            fig = px.scatter_3d(umap_org, x='UMAP_3_1', y='UMAP_3_2', z='UMAP_3_3', color=select_color,  opacity=0.7, size_max=12, height=400, width=500)
+            fig = px.scatter_3d(umap_org, x='UMAP_3_1', y='UMAP_3_2', z='UMAP_3_3', color=select_color,  opacity=1, size=[4]*len(umap_org), height=600, width=600)
+            fig.layout.update(showlegend=False)
+            # fig.update_layout(legend=dict(
+            #     orientation="h",
+            #     yanchor="bottom",
+            #     y=1.02,
+            #     xanchor="right",
+            #     x=1
+            # ))
             st.plotly_chart(fig, use_container_width=True)
         with col2:
             st.write('### Replication Cohort')
-            fig = px.scatter_3d(umap_rep, x='UMAP_3_1', y='UMAP_3_2', z='UMAP_3_3', color=select_color,  opacity=0.7, size_max=12, height=400, width=500)
+            fig = px.scatter_3d(umap_rep, x='UMAP_3_1', y='UMAP_3_2', z='UMAP_3_3', color=select_color,  opacity=1, size=[4]*len(umap_rep), height=600, width=600)
+            fig.update_layout(legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            ))
             st.plotly_chart(fig, use_container_width=True)
     
