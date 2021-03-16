@@ -3,26 +3,53 @@ import pandas as pd
 import plotly.express as px
 
 def app():
+    st.write("## Topological Space for ALS Subtypes using Semi-supervised Approach")
+    original_data = pd.read_csv("data/scriptToWrangleJessicaDataFreeze5/ALSregistry.AdrianoChio.wrangled.nodates.freeze5.csv")
     umap_org_full = pd.read_csv('saved_models/ALS_NN_umap_org.csv', sep=',')
+    umap_org_full = pd.merge(original_data, umap_org_full, left_on='number', right_on='number')
+    replication_data = pd.read_csv("data/scriptToWrangleJessicaDataFreeze5/ALSregistry.JessicaMandrioli.wrangled.nodates.freeze5.csv")
     umap_rep_full = pd.read_csv('saved_models/ALS_NN_umap_rep.csv', sep=',')
-    colorable_columns = ['clinicaltype_at_oneyear', 'clinicaltype_at_onset', 'initial_dx_was_PLS',
-                        'mutationPresent', 'cognitiveStatus1', 'cognitiveImpairmentPresent', 'PEGinserted', 'BIPAP']
+    umap_rep_full = pd.merge(original_data, umap_rep_full, left_on='number', right_on='number')
+    colorable_columns_maps ={
+        'clinicaltype_at_oneyear_y': "ALS clinical subtype at 1 year", 
+        'elEscorialAtDx': "El Escorial category at diagnosis",
+        'c9orf72_status_x': "C9orf72 Status",
+        'firstALSFRS_total': "ALSFRS Score", 
+        'familyHistoryOfALS': "Family History of ALS", 
+    }
+    colorable_columns = list(colorable_columns_maps) 
+    
     colorable_columns = list(set(colorable_columns).intersection(set(list(umap_rep_full.columns))))
-    select_color = st.selectbox('Select a color to visualize', colorable_columns, index=0)
+    st.write("### Select a factor to color according to the factor")
+    select_color = st.selectbox('', [colorable_columns_maps[i] for i in colorable_columns], index=0)
+    umap_org_full = umap_org_full.rename(columns=colorable_columns_maps) 
+    umap_rep_full = umap_rep_full.rename(columns=colorable_columns_maps) 
     umap_org = umap_org_full[[select_color] + ['UMAP_3_1', 'UMAP_3_2', 'UMAP_3_3']].dropna()
     umap_rep = umap_rep_full[[select_color] + ['UMAP_3_1', 'UMAP_3_2', 'UMAP_3_3']].dropna()
-    st.write("Total Points in Original Data:", len(umap_org))
-    st.write("Total Points in Replication Data:", len(umap_rep))
     color_discrete_map = {}
     color_discrete_map_list = ["red", "green", "blue", "magenta", "yellow", "pink", "grey", "black", "brown", "purple"]
     for e, classname in enumerate(sorted( list(set(umap_org[select_color]).union(set(umap_rep[select_color]))) ) ) :
-        color_discrete_map[classname] = color_discrete_map_list[e] 
+        color_discrete_map[classname] = color_discrete_map_list[e%10] 
+
     
-    st.write("## 3D-UMAP Plots for ALS subtypes")
-    st.write('### Training Cohort')
-    fig = px.scatter_3d(umap_org, x='UMAP_3_1', y='UMAP_3_2', z='UMAP_3_3', color=select_color, color_discrete_map=color_discrete_map)
-    st.plotly_chart(fig, use_container_width=True)
-    st.write('### Replication Cohort')
-    fig = px.scatter_3d(umap_rep, x='UMAP_3_1', y='UMAP_3_2', z='UMAP_3_3', color=select_color, color_discrete_map=color_discrete_map)
-    st.plotly_chart(fig, use_container_width=True)
+    if len(color_discrete_map) < 10:
+        col1, col2 = st.beta_columns(2)
+        with col1:
+            st.write('### Discovery Cohort')
+            fig = px.scatter_3d(umap_org, x='UMAP_3_1', y='UMAP_3_2', z='UMAP_3_3', color=select_color, color_discrete_map=color_discrete_map, opacity=0.7, size_max=12, height=400, width=500)
+            st.plotly_chart(fig, use_container_width=True)
+        with col2:
+            st.write('### Replication Cohort')
+            fig = px.scatter_3d(umap_rep, x='UMAP_3_1', y='UMAP_3_2', z='UMAP_3_3', color=select_color, color_discrete_map=color_discrete_map,  opacity=0.7, size_max=12, height=400, width=500)
+            st.plotly_chart(fig, use_container_width=True)
+    else:
+        col1, col2 = st.beta_columns(2)
+        with col1:
+            st.write('### Discovery Cohort')
+            fig = px.scatter_3d(umap_org, x='UMAP_3_1', y='UMAP_3_2', z='UMAP_3_3', color=select_color,  opacity=0.7, size_max=12, height=400, width=500)
+            st.plotly_chart(fig, use_container_width=True)
+        with col2:
+            st.write('### Replication Cohort')
+            fig = px.scatter_3d(umap_rep, x='UMAP_3_1', y='UMAP_3_2', z='UMAP_3_3', color=select_color,  opacity=0.7, size_max=12, height=400, width=500)
+            st.plotly_chart(fig, use_container_width=True)
     

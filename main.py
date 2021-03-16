@@ -35,7 +35,7 @@ for col in original_data[selected_cols_x_top].columns:
 original_encoded_data = original_data[['number', selected_cols_y]].copy().rename(columns={'number': 'ID'})
 replication_encoded_data = replication_data[['number', selected_cols_y]].copy().rename(columns={'number': 'ID'})
 categorical_variable = [
-    'smoker', 'cognitiveStatus2', 'elEscorialAtDx', 'anatomicalLevel_at_onset', 'site_of_onset',
+    'smoker', 'elEscorialAtDx', 'anatomicalLevel_at_onset', 'site_of_onset',
     'onset_side', 'ALSFRS1'
 ]
 numerical_variable = [

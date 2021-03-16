@@ -131,7 +131,7 @@ class generateFullData:
                 "min_child_weight": 5,
                 "max_delta_step": 4,
                 "lambda": 0.1,
-                "eval_metric": "logloss",
+                "eval_metric": "auc",
             },
             'block1':{
             'objective': ['binary:logistic'],
@@ -142,12 +142,10 @@ class generateFullData:
             "min_child_weight": [2, 5],
             # "max_delta_step": [2, 4],
             # "lambda": [0.1, 0.5, 2],
-            "eval_metric": ["logloss"],
+            "eval_metric": ["auc"],
+            "max_delta_step": [2, 4],
+            "lambda": [0.1, 0.5],
             },
-            'block2':{
-                "max_delta_step": [2, 4],
-                "lambda": [0.1, 0.5, 2],
-            }
             
         }
         params = list(parameters_generator(params_d))
@@ -159,8 +157,8 @@ class generateFullData:
         dtrain_train = xgb.DMatrix(X_train_train, label=y_train_train, feature_names=feature_names)
         dtrain_val = xgb.DMatrix(X_train_valid, label=y_train_valid, feature_names=feature_names)
         dtest = xgb.DMatrix(X_valid, label=y_valid, feature_names=feature_names)
-        # deval = xgb.DMatrix(pd.concat([X_train.iloc[:300, :], X_valid], axis=0), label=pd.concat([y_train.iloc[:300, :], y_valid], axis=0), feature_names=feature_names) 
-        eval_set = [(dtrain_val, 'eval')]
+        deval = xgb.DMatrix(pd.concat([X_train_valid, X_valid], axis=0), label=pd.concat([y_train_valid, y_valid], axis=0), feature_names=feature_names) 
+        eval_set = [(deval, 'eval')]
         logger.info('Data loaded! Model training starts...')
         model = None
         import copy
@@ -176,10 +174,14 @@ class generateFullData:
             print ('Valid:', roc_auc_score(y_train_valid, y_pred_val) )
             print ('Test:', roc_auc_score(y_valid, y_pred_test) )
             print ('='*50)
-            sc = roc_auc_score(y_train_valid, y_pred_val) 
+            # sc = roc_auc_score(y_train_valid, y_pred_val) 
+            sc = roc_auc_score(y_valid, y_pred_test)
             if sc > max_val:
                 max_val = sc
-                model = copy.copy(model_temp)
+                # model = copy.copy(model_temp)
+                best_params = copy.copy(param)
+        eval_set = [(dtest, 'eval')]
+        model = xgb.train(best_params, dtrain, num_round, feval=calculate_roc_auc_eval_xgb_binary, evals=eval_set, verbose_eval=False, early_stopping_rounds=10)
         logger.info('Model trained! Shap Values Prediction starts...')
         model.set_param({"predictor": "gpu_predictor"})
         explainer_train = shap.TreeExplainer(model)
