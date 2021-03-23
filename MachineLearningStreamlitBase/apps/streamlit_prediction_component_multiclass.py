@@ -198,8 +198,8 @@ def app():
         import altair as alt
         K = K.rename(columns={"classname": "Class Labels", "predicted_probability": "Predicted Probability"})
         f = alt.Chart(K).mark_bar().encode(
-                    y='Class Labels:N',
-                    x='Predicted Probability:Q',
+                    y=alt.Y('Class Labels:N',sort=alt.EncodingSortField(field="Predicted Probability", order='descending')),
+                    x=alt.X('Predicted Probability:Q'),
                     color=alt.Color('color', legend=None),
                 ).properties(width=500, height=300)
         st.write(f)
@@ -255,8 +255,8 @@ def app():
             import altair as alt
             K = K.rename(columns={"classname": "Class Labels", "predicted_probability": "Predicted Probability"})
             f = alt.Chart(K).mark_bar().encode(
-                    y='Class Labels:N',
-                    x='Predicted Probability:Q',
+                y=alt.Y('Class Labels:N',sort=alt.EncodingSortField(field="Predicted Probability", order='descending')),
+                    x=alt.X('Predicted Probability:Q'),
                     color=alt.Color('color', legend=None),
                 ).properties( width=500, height=300)
             st.write(f)

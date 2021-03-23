@@ -154,97 +154,19 @@ def app():
             st.pyplot()
 
     
-    st.write('## Decision Plots')
-    st.write("""
-        We selected 400 subsamples to understand the pathways of predictive modeling. SHAP decision plots show how complex models arrive at their predictions (i.e., how models make decisions). 
-        Each observation’s prediction is represented by a colored line.
-        At the top of the plot, each line strikes the x-axis at its corresponding observation’s predicted value. 
-        This value determines the color of the line on a spectrum. 
-        Moving from the bottom of the plot to the top, SHAP values for each feature are added to the model’s base value. 
-        This shows how each feature contributes to the overall prediction.
-    """)
+    
         # labels_pred_new = np.array(labels_pred, dtype=np.float)
         
     
     import random
-    select_random_samples = np.random.choice(shap_values.shape[0], 400)
+    select_random_samples = np.random.choice(shap_values.shape[0], 800)
 
     new_X = X.iloc[select_random_samples]
     new_shap_values = shap_values[select_random_samples,:]
     new_labels_pred = np.array(labels_pred, dtype=np.float64)[select_random_samples] 
 
 
-    st.write('### Pathways for Prediction (Hierarchical Clustering)')
-    if st.checkbox("Show Prediction Pathways (Feature Clustered)"):
-        col3, col4, col5 = st.beta_columns(3)
-        with col3:
-            st.write('Typical Prediction Path: Uncertainity (0.3-0.7)')
-            r = shap.decision_plot(exval, np.copy(new_shap_values), list(new_X.columns), feature_order='hclust', return_objects=True, show=False)
-            T = new_X.iloc[(new_labels_pred >= 0.3) & (new_labels_pred <= 0.7)]
-            import warnings
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                sh = np.copy(new_shap_values)[(new_labels_pred >= 0.3) & (new_labels_pred <= 0.7), :]
-            fig, ax = plt.subplots()
-            shap.decision_plot(exval, sh, T, show=False, feature_order=r.feature_idx, link='logit', return_objects=True, new_base_value=0)
-            st.pyplot(fig)
-        with col4:
-            st.write('Typical Prediction Path: Positive Class (>=0.95)')
-            fig, ax = plt.subplots()
-            T = new_X.iloc[np.array(new_labels_pred, dtype=np.float64) >= 0.95]
-            import warnings
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                sh = np.copy(new_shap_values)[new_labels_pred >= 0.95, :]
-            shap.decision_plot(exval, sh, T, show=False, link='logit',  feature_order=r.feature_idx, new_base_value=0)
-            st.pyplot(fig)
-        with col5:
-            st.write('Typical Prediction Path: Negative Class (<=0.05)')
-            fig, ax = plt.subplots()
-            T = new_X.iloc[new_labels_pred <= 0.05]
-            import warnings
-            with warnings.catch_warnings():
-                   warnings.simplefilter("ignore")
-                   sh = np.copy(new_shap_values)[new_labels_pred <= 0.05, :]
-            shap.decision_plot(exval, sh, T, show=False, link='logit', feature_order=r.feature_idx, new_base_value=0)
-            st.pyplot(fig)
     
-
-    st.write('### Pathways for Prediction (Feature Importance)')
-    if st.checkbox("Show Prediction Pathways (Feature Importance)"):
-        col31, col41, col51 = st.beta_columns(3)
-        with col31:
-            st.write('Typical Prediction Path: Uncertainity (0.3-0.7)')
-            r = shap.decision_plot(exval, np.copy(new_shap_values), list(new_X.columns), return_objects=True, show=False)
-            T = new_X.iloc[(new_labels_pred >= 0.3) & (new_labels_pred <= 0.7)]
-            import warnings
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                sh = np.copy(new_shap_values)[(new_labels_pred >= 0.3) & (new_labels_pred <= 0.7), :]
-            fig, ax = plt.subplots()
-            shap.decision_plot(exval, sh, T, show=False, feature_order=r.feature_idx, link='logit', return_objects=True, new_base_value=0)
-            st.pyplot(fig)
-        with col41:
-            st.write('Typical Prediction Path: Positive Class (>=0.95)')
-            fig, ax = plt.subplots()
-            T = new_X.iloc[np.array(new_labels_pred, dtype=np.float64) >= 0.95]
-            import warnings
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                sh = np.copy(new_shap_values)[new_labels_pred >= 0.95, :]
-            shap.decision_plot(exval, sh, T, show=False, link='logit',  feature_order=r.feature_idx, new_base_value=0)
-            st.pyplot(fig)
-        with col51:
-            st.write('Typical Prediction Path: Negative Class (<=0.05)')
-            fig, ax = plt.subplots()
-            T = new_X.iloc[new_labels_pred <= 0.05]
-            import warnings
-            with warnings.catch_warnings():
-                   warnings.simplefilter("ignore")
-                   sh = np.copy(new_shap_values)[new_labels_pred <= 0.05, :]
-            shap.decision_plot(exval, sh, T, show=False, link='logit', feature_order=r.feature_idx, new_base_value=0)
-            st.pyplot(fig)
-
     st.write('## Statistics for Individual Classes') 
     st.write("#### Select the class")
     feature_set_my = st.selectbox("", ['Select']+ class_names, index=0) 
@@ -301,3 +223,81 @@ def app():
                 fig, ax = plt.subplots()
                 shap.decision_plot(exval, shap_values[misclassified][id_sel_pats], X.iloc[misclassified,:].iloc[id_sel_pats], link='logit', feature_order=r.feature_idx, highlight=0, new_base_value=0)
                 st.pyplot()
+        st.write('## Decision Plots')
+        st.write("""
+        We selected 800 subsamples to understand the pathways of predictive modeling. SHAP decision plots show how complex models arrive at their predictions (i.e., how models make decisions). 
+        Each observation’s prediction is represented by a colored line.
+        At the top of the plot, each line strikes the x-axis at its corresponding observation’s predicted value. 
+        This value determines the color of the line on a spectrum. 
+        Moving from the bottom of the plot to the top, SHAP values for each feature are added to the model’s base value. 
+        This shows how each feature contributes to the overall prediction.
+        """)
+        st.write('### Pathways for Prediction (Hierarchical Clustering)')
+        if st.checkbox("Show Prediction Pathways (Feature Clustered)"):
+                # col3, col4, col5 = st.beta_columns(3)
+                # st.write('Typical Prediction Path: Uncertainity (0.2-0.8)')
+                r = shap.decision_plot(exval, np.copy(new_shap_values), list(new_X.columns), feature_order='hclust', return_objects=True, show=False)
+                T = new_X.iloc[(new_labels_pred >= 0) & (new_labels_pred <= 1)]
+                import warnings
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    sh = np.copy(new_shap_values)[(new_labels_pred >= 0) & (new_labels_pred <= 1), :]
+                fig, ax = plt.subplots()
+                shap.decision_plot(exval, sh, T, show=False, feature_order=r.feature_idx, link='logit', return_objects=True, new_base_value=0)
+                st.pyplot(fig)
+                # with col4:
+                #     st.write('Typical Prediction Path: Positive Class (>=0.9)')
+                #     fig, ax = plt.subplots()
+                #     T = new_X.iloc[np.array(new_labels_pred, dtype=np.float64) >= 0.9]
+                #     import warnings
+                #     with warnings.catch_warnings():
+                #         warnings.simplefilter("ignore")
+                #         sh = np.copy(new_shap_values)[new_labels_pred >= 0.9, :]
+                #     shap.decision_plot(exval, sh, T, show=False, link='logit',  feature_order=r.feature_idx, new_base_value=0)
+                #     st.pyplot(fig)
+                # with col5:
+                #     st.write('Typical Prediction Path: Negative Class (<=0.1)')
+                #     fig, ax = plt.subplots()
+                #     T = new_X.iloc[new_labels_pred <= 0.1]
+                #     import warnings
+                #     with warnings.catch_warnings():
+                #            warnings.simplefilter("ignore")
+                #            sh = np.copy(new_shap_values)[new_labels_pred <= 0.1, :]
+                #     shap.decision_plot(exval, sh, T, show=False, link='logit', feature_order=r.feature_idx, new_base_value=0)
+                #     st.pyplot(fig)
+    
+
+        st.write('### Pathways for Prediction (Feature Importance)')
+        if st.checkbox("Show Prediction Pathways (Feature Importance)"):
+                # col31, col41, col51 = st.beta_columns(3)
+                # with col31:
+                # st.write('Typical Prediction Path: Uncertainity (0.2-0.8)')
+                r = shap.decision_plot(exval, np.copy(new_shap_values), list(new_X.columns), return_objects=True, show=False)
+                T = new_X.iloc[(new_labels_pred >= 0) & (new_labels_pred <= 1)]
+                import warnings
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    sh = np.copy(new_shap_values)[(new_labels_pred >= 0) & (new_labels_pred <= 1), :]
+                fig, ax = plt.subplots()
+                shap.decision_plot(exval, sh, T, show=False, feature_order=r.feature_idx, link='logit', return_objects=True, new_base_value=0)
+                st.pyplot(fig)
+                # with col41:
+                #     st.write('Typical Prediction Path: Positive Class (>=0.9)')
+                #     fig, ax = plt.subplots()
+                #     T = new_X.iloc[np.array(new_labels_pred, dtype=np.float64) >= 0.9]
+                #     import warnings
+                #     with warnings.catch_warnings():
+                #         warnings.simplefilter("ignore")
+                #         sh = np.copy(new_shap_values)[new_labels_pred >= 0.9, :]
+                #     shap.decision_plot(exval, sh, T, show=False, link='logit',  feature_order=r.feature_idx, new_base_value=0)
+                #     st.pyplot(fig)
+                # with col51:
+                #     st.write('Typical Prediction Path: Negative Class (<=0.1)')
+                #     fig, ax = plt.subplots()
+                #     T = new_X.iloc[new_labels_pred <= 0.1]
+                #     import warnings
+                #     with warnings.catch_warnings():
+                #            warnings.simplefilter("ignore")
+                #            sh = np.copy(new_shap_values)[new_labels_pred <= 0.1, :]
+                #     shap.decision_plot(exval, sh, T, show=False, link='logit', feature_order=r.feature_idx, new_base_value=0)
+                #     st.pyplot(fig)
