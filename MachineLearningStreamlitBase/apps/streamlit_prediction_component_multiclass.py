@@ -10,11 +10,8 @@ import plotly.express as px
 import plotly
 import copy
 import matplotlib.pyplot as plt
-st.set_option('deprecation.showPyplotGlobalUse', False)
+# st.set_option('deprecation.showPyplotGlobalUse', False)
 import joblib
-
-import warnings
-warnings.filterwarnings("ignore")
 import xgboost as xgb
 
 
@@ -190,7 +187,7 @@ def app():
         feature_print.index = feature_print.index.map(lambda x: feature_mapping[x])
         feature_print = feature_print.reset_index()
         feature_print.columns = ["Feature Name", "Feature Value"] 
-        st.table(feature_print.set_index("Feature Name"))
+        st.table(feature_print.set_index("Feature Name").astype(str))
         predicted_prob = defaultdict(list)
         predicted_class = -1
         max_val = -1
@@ -265,7 +262,8 @@ def app():
                     selected.append(feature_print.iloc[i]["Feature Name"])
 
             # st.table(feature_print)
-            st.table(feature_print_what.set_index("Feature Name").style.apply(lambda x: ['background: yellow' if (x.name in selected) else 'background: lightgreen' for i in x], axis=1))
+
+            st.table(feature_print_what.astype(str).set_index("Feature Name").style.apply(lambda x: ['background: yellow' if (x.name in selected) else 'background: lightgreen' for i in x], axis=1))
             dfl = dfl[X.columns].replace('X', np.nan)
             predicted_prob = defaultdict(list)
             predicted_class = -1

@@ -9,10 +9,8 @@ import hashlib
 import plotly.express as px
 import plotly
 import copy
-import warnings
-warnings.filterwarnings("ignore")
 import matplotlib.pyplot as plt
-st.set_option('deprecation.showPyplotGlobalUse', False)
+# st.set_option('deprecation.showPyplotGlobalUse', False)
 
 dict_map_result = {
     'smoker': "Smoking status",
@@ -103,7 +101,7 @@ def app():
 
     st.write("## Results")
     st.write("### Performance of Surrogate Model")
-    st.table(df_res.set_index('class name'))
+    st.table(df_res.set_index('class name').astype(str))
 
     @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
     def load_model3():
@@ -217,13 +215,13 @@ def app():
             st.write("### Discovery Cohort Confusion Matrix")
             Z = sklearn.metrics.confusion_matrix(labels_actual[:len_train], np.array(labels_pred[:len_train])>0.5)
             Z_df = pd.DataFrame(Z, columns=['Predicted 0', 'Predicted 1'], index= ['Actual 0', 'Actual 1'])
-            st.table(Z_df)
+            st.table(Z_df.astype(str))
     
         with col02:
             st.write("### Replication Cohort Confusion Matrix")
             Z = sklearn.metrics.confusion_matrix(labels_actual[len_train:], np.array(labels_pred[len_train:])>0.5)
             Z_df = pd.DataFrame(Z, columns=['Predicted 0', 'Predicted 1'], index= ['Actual 0', 'Actual 1'])
-            st.table(Z_df)
+            st.table(Z_df.astype(str))
         
         labels_actual_new = np.array(labels_actual, dtype=np.float64)
         y_pred = (shap_values.sum(1) + exval) > 0
