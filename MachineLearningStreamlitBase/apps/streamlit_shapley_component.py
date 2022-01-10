@@ -31,13 +31,24 @@ dict_map_result = {
 
 
 def app():
-    with open('saved_models/trainXGB_class_map.pkl', 'rb') as f:
-        class_names = list(pickle.load(f))
+    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
+    def load_model1():
+        with open('saved_models/trainXGB_class_map.pkl', 'rb') as f:
+            class_names = list(pickle.load(f))
+        return class_names
 
-    st.write("## SHAP Model Interpretation") 
-    with open('saved_models/trainXGB_gpu.aucs', 'rb') as f:
-        result_aucs = pickle.load(f)
-    
+    class_names = load_model1()
+
+    st.write("## SHAP Model Interpretation")
+
+    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
+    def load_model2():
+        with open('saved_models/trainXGB_gpu.aucs', 'rb') as f:
+            result_aucs = pickle.load(f)
+        return result_aucs
+
+    result_aucs = load_model2()
+
     if len(result_aucs[class_names[0]]) == 3:
         mean_train_aucs = round(np.mean([result_aucs[i][0] for i in class_names]), 2)
         mean_test_aucs = round(np.mean([result_aucs[i][1] for i in class_names]), 2)
@@ -47,7 +58,7 @@ def app():
         df_res = pd.DataFrame({'class name': class_names, 'Train AUC': ["{:.2f}".format(result_aucs[i][0]) for i in class_names], 'Test AUC':  ["{:.2f}".format(result_aucs[i][1]) for i in class_names]})
         replication_avail = False
     
-    @st.cache(allow_output_mutation=True)
+    @st.cache(allow_output_mutation=True, ttl=24 * 3600)
     def get_shapley_value_data(train, replication=True, dict_map_result={}):
         dataset_type = '' 
         shap_values = np.concatenate([train[0]['shap_values_train'], train[0]['shap_values_test']], axis=0)
@@ -76,8 +87,14 @@ def app():
         """
     )
     feature_set_my = class_names[0]
-    with open('saved_models/trainXGB_gpu_{}.data'.format(feature_set_my), 'rb') as f:
-        train = pickle.load(f)
+
+    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
+    def load_model3():
+        with open('saved_models/trainXGB_gpu_{}.data'.format(feature_set_my), 'rb') as f:
+            train = pickle.load(f)
+        return train
+
+    train = load_model3()
     data_load_state = st.text('Loading data...')
     cloned_output = copy.deepcopy(get_shapley_value_data(train, replication=replication_avail, dict_map_result=dict_map_result))
     data_load_state.text("Done Data Loading! (using st.cache)")
@@ -87,17 +104,18 @@ def app():
     st.write("## Results")
     st.write("### Performance of Surrogate Model")
     st.table(df_res.set_index('class name'))
-    
-     
-    
-    shap_values_list = []
-    for classname in class_names: 
-        with open('saved_models/trainXGB_gpu_{}.data'.format(classname), 'rb') as f:
-            train_temp = pickle.load(f)
-            shap_values_list.append(np.concatenate([train_temp[0]['shap_values_train'], train_temp[0]['shap_values_test']], axis=0))
-    shap_values = np.mean(shap_values_list, axis=0) 
 
-    
+    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
+    def load_model3():
+        shap_values_list = []
+        for classname in class_names:
+            with open('saved_models/trainXGB_gpu_{}.data'.format(classname), 'rb') as f:
+                train_temp = pickle.load(f)
+                shap_values_list.append(np.concatenate([train_temp[0]['shap_values_train'], train_temp[0]['shap_values_test']], axis=0))
+        shap_values = np.mean(shap_values_list, axis=0)
+        return shap_values
+
+    shap_values = load_model3()
     import sklearn
     # st.write(sum(labels_actual[:len_train]), sum(np.array(labels_pred[:len_train])>0.5))
     # st.write(sum(labels_actual[len_train:]), sum(np.array(labels_pred[len_train:])>0.5))
@@ -172,9 +190,13 @@ def app():
     st.write('## Statistics for Individual Classes') 
     st.write("#### Select the class")
     feature_set_my = st.selectbox("", ['Select']+ class_names, index=0) 
-    if not feature_set_my== "Select": 
-        with open('saved_models/trainXGB_gpu_{}.data'.format(feature_set_my), 'rb') as f:
-            train = pickle.load(f)
+    if not feature_set_my== "Select":
+        @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
+        def load_model9():
+            with open('saved_models/trainXGB_gpu_{}.data'.format(feature_set_my), 'rb') as f:
+                train = pickle.load(f)
+            return train
+        train = load_model9()
         data_load_state = st.text('Loading data...')
         cloned_output = copy.deepcopy(get_shapley_value_data(train, replication=replication_avail, dict_map_result=dict_map_result))
         data_load_state.text("Done Data Loading! (using st.cache)")

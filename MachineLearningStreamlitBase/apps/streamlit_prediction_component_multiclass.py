@@ -49,18 +49,33 @@ def app():
         """, unsafe_allow_html=True) 
     st.markdown('<div class="boxBorder"><font color="RED">Disclaimer: This predictive tool is only for research purposes</font></div>', unsafe_allow_html=True)
     st.write("## Model Perturbation Analysis")
-    with open('saved_models/trainXGB_class_map.pkl', 'rb') as f:
-        class_names = list(pickle.load(f))
-    
-    M_dict = {}
-    for classname in class_names:
-        M_dict[classname] = joblib.load( 'saved_models/trainXGB_gpu_{}.model'.format(classname) )
-        M_dict[classname].verbosity = 0
-    
-    with open('saved_models/trainXGB_gpu_{}.data'.format(class_names[0]), 'rb') as f:
-        train = pickle.load(f)
-    with open('saved_models/trainXGB_categorical_map.pkl', 'rb') as f:
-        col_dict_map = pickle.load(f)
+
+    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
+    def load_model2():
+        with open('saved_models/trainXGB_class_map.pkl', 'rb') as f:
+            class_names = list(pickle.load(f))
+        return class_names
+
+    class_names = load_model2()
+
+    # @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
+    def load_model():
+        M_dict = {}
+        for classname in class_names:
+            M_dict[classname] = joblib.load('saved_models/trainXGB_gpu_{}.model'.format(classname))
+        return M_dict
+
+    M_dict = load_model()
+
+    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
+    def load_model1():
+        with open('saved_models/trainXGB_gpu_{}.data'.format(class_names[0]), 'rb') as f:
+            train = pickle.load(f)
+        with open('saved_models/trainXGB_categorical_map.pkl', 'rb') as f:
+            col_dict_map = pickle.load(f)
+        return train, col_dict_map
+
+    train, col_dict_map = load_model1()
 
     X = train[1]['X_valid'].copy() 
     ids = list(train[3]['ID_test'])
@@ -212,8 +227,13 @@ def app():
         st.write(f)
         # st.write('#### Trajectory for Predicted Class')
         st.write('#### Model Output Trajectory for {} Class using SHAP values'.format(predicted_class))
-        with open('saved_models/trainXGB_gpu_{}.data'.format(predicted_class), 'rb') as f:
-            new_train = pickle.load(f)
+
+        @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
+        def load_model5():
+            with open('saved_models/trainXGB_gpu_{}.data'.format(predicted_class), 'rb') as f:
+                new_train = pickle.load(f)
+            return new_train
+        new_train = load_model5()
         exval = new_train[2]['explainer_train'] 
         explainer_train = shap.TreeExplainer(M_dict[predicted_class])
         t1 = pd.DataFrame(X.loc[select_patient, :]).T
@@ -282,9 +302,15 @@ def app():
             # )  
             # st.plotly_chart(fig)
             st.write('#### Model Output Trajectory for {} Class using SHAP values'.format(predicted_class))
-            with open('saved_models/trainXGB_gpu_{}.data'.format(predicted_class), 'rb') as f:
-                new_train = pickle.load(f)
-            exval = new_train[2]['explainer_train'] 
+
+            @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
+            def load_model6():
+                with open('saved_models/trainXGB_gpu_{}.data'.format(predicted_class), 'rb') as f:
+                    new_train = pickle.load(f)
+                return new_train
+
+            new_train = load_model6()
+            exval = new_train[2]['explainer_train']
             explainer_train = shap.TreeExplainer(M_dict[predicted_class])
             t1 = dfl.copy() 
             shap_values_train = explainer_train.shap_values(t1)
