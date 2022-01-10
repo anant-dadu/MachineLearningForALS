@@ -12,6 +12,9 @@ import copy
 import matplotlib.pyplot as plt
 st.set_option('deprecation.showPyplotGlobalUse', False)
 import joblib
+import warnings
+warnings.filterwarnings("ignore")
+
 import xgboost as xgb
 
 def app():

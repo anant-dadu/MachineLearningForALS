@@ -12,7 +12,13 @@ import copy
 import matplotlib.pyplot as plt
 st.set_option('deprecation.showPyplotGlobalUse', False)
 import joblib
+
+import warnings
+warnings.filterwarnings("ignore")
 import xgboost as xgb
+
+
+
 
 feature_mapping = {
     'smoker': "Smoking status",
@@ -49,6 +55,7 @@ def app():
     M_dict = {}
     for classname in class_names:
         M_dict[classname] = joblib.load( 'saved_models/trainXGB_gpu_{}.model'.format(classname) )
+        M_dict[classname].verbosity = 0
     
     with open('saved_models/trainXGB_gpu_{}.data'.format(class_names[0]), 'rb') as f:
         train = pickle.load(f)

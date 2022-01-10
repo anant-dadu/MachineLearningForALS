@@ -9,6 +9,8 @@ import hashlib
 import plotly.express as px
 import plotly
 import copy
+import warnings
+warnings.filterwarnings("ignore")
 import matplotlib.pyplot as plt
 st.set_option('deprecation.showPyplotGlobalUse', False)
 

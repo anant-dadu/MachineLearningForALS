@@ -11,6 +11,13 @@ import plotly
 import copy
 import matplotlib.pyplot as plt
 st.set_option('deprecation.showPyplotGlobalUse', False)
+import logging
+
+logger = logging.getLogger()
+logger.disabled = True
+
+import warnings
+warnings.filterwarnings("ignore")
 
 
 from MachineLearningStreamlitBase.multiapp import MultiApp
