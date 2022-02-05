@@ -128,8 +128,10 @@ def app():
             st.write('---')
             temp = shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns)
             fig, ax = plt.subplots(figsize=(10,15))
-            shap.plots.beeswarm(shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns), show=False, max_display=20, order = shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns).mean(0).abs, plot_size=0.47)# , return_objects=True 
-            # shap.plots.beeswarm(temp, order=temp.mean(0).abs, show=False, max_display=20) # , return_objects=True 
+            shap.plots.beeswarm(shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns), show=False, max_display=20, order = shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns).mean(0).abs, plot_size=0.47)# 0.47# , return_objects=True
+            # shap.plots.beeswarm(temp, order=temp.mean(0).abs, show=False, max_display=20) # , return_objects=True
+            # fig.savefig('up_summary_plot1.svg', bbox_inches='tight', dpi=250)
+            # fig.savefig('up_summary_plot1.eps', bbox_inches='tight')
             st.pyplot(fig)
             st.write('---')
         with col2:
@@ -138,6 +140,8 @@ def app():
             temp = shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns)
             shap.plots.bar(shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns).mean(0), show=False, max_display=20, order=shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns).mean(0).abs)
             # shap.plots.bar(temp, order=temp.mean(0).abs, show=False, max_display=20)
+            # fig.savefig('summary_plot2.pdf', bbox_inches='tight')
+            # fig.savefig('summary_plot2.eps', bbox_inches='tight')
             st.pyplot(fig)
             st.write('---')
         with col2111:
@@ -146,6 +150,8 @@ def app():
             temp = shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns)
             shap.plots.bar(shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns).abs.mean(0), show=False, max_display=20, order=shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns).mean(0).abs)
             # shap.plots.bar(temp, order=temp.mean(0).abs, show=False, max_display=20)
+            # fig.savefig('summary_plot3.pdf', bbox_inches='tight')
+            # fig.savefig('summary_plot3.eps', bbox_inches='tight')
             st.pyplot(fig)
             st.write('---')
     

@@ -23,6 +23,7 @@ RUN pip install scikit_learn==0.24.1
 RUN pip install shap==0.40.0
 RUN pip install xgboost==1.3.3
 RUN pip install matplotlib==3.3.2
+RUN pip install psutil
 
 #Copy all files in current directory into app directory
 COPY . /app

@@ -100,6 +100,7 @@ def app():
         select_patient = random.choice(list(X.index))
     else:
         select_patient = list(X.index)[0]
+        select_patient = 904
 
     select_patient_index = ids.index(select_patient) 
     new_feature_input = defaultdict(list) 
@@ -183,10 +184,17 @@ def app():
     col01, col02 = st.beta_columns(2)
     with col01:
         st.write('### Prediction on actual feature values')
+        st.write(X_new.loc[select_patient, :])
+        X_new.to_csv('/app/HELLOJI.csv', index=False)
+        # print ('oHELKLO')
+        # X_new.loc[select_patient, :] =  [np.nan, 'definite', 'bulbar', 'bulbar', np.nan, 2, 92, 75, 0, 72.833, 314]
         feature_print = X_new.loc[select_patient, :].fillna('X')
+        # feature_print.iloc[:, 1] = ['never', 'definite', 'bulbar', 'bulbar', 'X', '2']
         feature_print.index = feature_print.index.map(lambda x: feature_mapping[x])
         feature_print = feature_print.reset_index()
-        feature_print.columns = ["Feature Name", "Feature Value"] 
+        feature_print.columns = ["Feature Name", "Feature Value"]
+        # feature_print.
+
         st.table(feature_print.set_index("Feature Name").astype(str))
         predicted_prob = defaultdict(list)
         predicted_class = -1
@@ -239,8 +247,10 @@ def app():
         shap.force_plot(exval, shap_values_train, t1, show=False, matplotlib=True)
         st.pyplot()
         fig, ax = plt.subplots()
+        t2.columns = t2.columns.map(lambda x: feature_mapping.get(x, x))
         r = shap.decision_plot(exval, shap_values_train, t2, link='logit', return_objects=True, new_base_value=0, highlight=0)
         st.pyplot(fig)
+        # fig.savefig('/app/new_shap_values.pdf', bbox_inches='tight')
     if show_whatif:
         with col02:
             dfl = pd.DataFrame(new_feature_input)
@@ -315,9 +325,13 @@ def app():
             shap.force_plot(exval, shap_values_train, t1, show=False, matplotlib=True)
             st.pyplot()
             fig, ax = plt.subplots()
+            ndfl.columns = ndfl.columns.map(lambda x: feature_mapping.get(x, x))
             _ = shap.decision_plot(exval, shap_values_train, ndfl.fillna('X'), link='logit', feature_order=r.feature_idx, return_objects=True, new_base_value=0, highlight=0)
+            # fig.savefig('/app/new_shap_values_whatif.pdf', bbox_inches='tight')
+            # fig.savefig('/app/new_shap_values_whatif.eps', bbox_inches='tight')
             st.pyplot(fig)
-    
+
+
     # st.write('### Force Plots')
     # patient_name = st.selectbox('Select patient id', options=list(patient_index))
     # sample_id = patient_index.index(patient_name)
