@@ -184,8 +184,8 @@ def app():
     col01, col02 = st.beta_columns(2)
     with col01:
         st.write('### Prediction on actual feature values')
-        st.write(X_new.loc[select_patient, :])
-        X_new.to_csv('/app/HELLOJI.csv', index=False)
+        # st.write(X_new.loc[select_patient, :])
+        # X_new.to_csv('/app/HELLOJI.csv', index=False)
         # print ('oHELKLO')
         # X_new.loc[select_patient, :] =  [np.nan, 'definite', 'bulbar', 'bulbar', np.nan, 2, 92, 75, 0, 72.833, 314]
         feature_print = X_new.loc[select_patient, :].fillna('X')
