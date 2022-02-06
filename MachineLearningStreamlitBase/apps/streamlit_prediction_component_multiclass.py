@@ -47,7 +47,7 @@ def app():
     st.markdown('<div class="boxBorder"><font color="RED">Disclaimer: This predictive tool is only for research purposes</font></div>', unsafe_allow_html=True)
     st.write("## Model Perturbation Analysis")
 
-    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
+    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None}, allow_output_mutation=True, ttl=24 * 3600)
     def load_model2():
         with open('saved_models/trainXGB_class_map.pkl', 'rb') as f:
             class_names = list(pickle.load(f))
@@ -64,7 +64,7 @@ def app():
 
     M_dict = load_model()
 
-    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
+    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None}, allow_output_mutation=True, ttl=24 * 3600)
     def load_model1():
         with open('saved_models/trainXGB_gpu_{}.data'.format(class_names[0]), 'rb') as f:
             train = pickle.load(f)
@@ -74,7 +74,7 @@ def app():
 
     train, col_dict_map = load_model1()
 
-    X = train[1]['X_valid'].copy() 
+    X = train[1]['X_valid']# .copy()
     ids = list(train[3]['ID_test'])
     X.index = ids
     labels_pred =  list(train[3]['y_pred_test']) 
@@ -233,7 +233,7 @@ def app():
         # st.write('#### Trajectory for Predicted Class')
         st.write('#### Model Output Trajectory for {} Class using SHAP values'.format(predicted_class))
 
-        @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
+        @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None}, allow_output_mutation=True, ttl=24 * 3600)
         def load_model5():
             with open('saved_models/trainXGB_gpu_{}.data'.format(predicted_class), 'rb') as f:
                 new_train = pickle.load(f)
@@ -311,7 +311,7 @@ def app():
             # st.plotly_chart(fig)
             st.write('#### Model Output Trajectory for {} Class using SHAP values'.format(predicted_class))
 
-            @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
+            @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None}, allow_output_mutation=True, ttl=24 * 3600)
             def load_model6():
                 with open('saved_models/trainXGB_gpu_{}.data'.format(predicted_class), 'rb') as f:
                     new_train = pickle.load(f)
@@ -320,7 +320,7 @@ def app():
             new_train = load_model6()
             exval = new_train[2]['explainer_train']
             explainer_train = shap.TreeExplainer(M_dict[predicted_class])
-            t1 = dfl.copy() 
+            t1 = dfl.copy()
             shap_values_train = explainer_train.shap_values(t1)
             shap.force_plot(exval, shap_values_train, t1, show=False, matplotlib=True)
             st.pyplot()

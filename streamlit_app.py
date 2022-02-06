@@ -74,6 +74,9 @@ with cols[3]:
     st.write("Cores utilization: ***" + ', '.join([str(round((i * 100) / psutil.cpu_count(), 2)) for i in psutil.getloadavg()]) + '***')
     # st.write("All Memory USE", dict(psutil.virtual_memory()._asdict()))
 
+
+import gc
+gc.enable()
 # cols[1].write("Load Average", psutil.getloadavg())
 # gives an object with many fields
 # you can convert that object to a dictionary
@@ -90,4 +93,4 @@ app.add_app("Predict Patient ALS Subtype", streamlit_prediction_component_multic
 ##TODO: Add any apps you like
 app.add_app("Explore the ALS subtype topological space", topological_space.app)
 app.run()
-
+gc.collect()

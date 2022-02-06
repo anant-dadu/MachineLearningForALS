@@ -29,7 +29,7 @@ dict_map_result = {
 
 
 def app():
-    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None}, allow_output_mutation=True, ttl=24 * 3600)
+    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
     def load_model1():
         with open('saved_models/trainXGB_class_map.pkl', 'rb') as f:
             class_names = list(pickle.load(f))
@@ -39,7 +39,7 @@ def app():
 
     st.write("## SHAP Model Interpretation")
 
-    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None}, allow_output_mutation=True, ttl=24 * 3600)
+    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
     def load_model2():
         with open('saved_models/trainXGB_gpu.aucs', 'rb') as f:
             result_aucs = pickle.load(f)
@@ -68,13 +68,12 @@ def app():
         ids = list(train[3]['ID_train'.format(dataset_type)]) + list(train[3]['ID_test'.format(dataset_type)])
         labels_pred = list(train[3]['y_pred_train'.format(dataset_type)]) + list(train[3]['y_pred_test'.format(dataset_type)]) 
         labels_actual = list(train[3]['y_train'.format(dataset_type)]) + list(train[3]['y_test'.format(dataset_type)]) 
-        shap_values_updated = shap.Explanation(values=np.array(shap_values), base_values=np.array([exval]*len(X)), data=np.array(X.values), feature_names=X.columns)
+        shap_values_updated = shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns)
         train_samples = len(train[1]['X_train'])
         test_samples = len(train[1]['X_valid'])
         X.columns = ['{}'.format(dict_map_result[col]) if dict_map_result.get(col, None) is not None else col for col in list(X.columns)]
         # X.columns = ['({}) {}'.format(dict_map_result[col], col) if dict_map_result.get(col, None) is not None else col for col in list(X.columns)]
-        # shap_values_updated = copy.deepcopy(shap_values_updated)
-        shap_values_updated = shap_values_updated
+        shap_values_updated = copy.deepcopy(shap_values_updated) 
         patient_index = [hashlib.md5(str(s).encode()).hexdigest() for e, s in enumerate(ids)]
         return (X, shap_values, exval, patient_index, auc_train, auc_test, labels_actual, labels_pred, shap_values_updated, train_samples, test_samples)
     
@@ -87,7 +86,7 @@ def app():
     )
     feature_set_my = class_names[0]
 
-    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None}, allow_output_mutation=True, ttl=24 * 3600)
+    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
     def load_model3():
         with open('saved_models/trainXGB_gpu_{}.data'.format(feature_set_my), 'rb') as f:
             train = pickle.load(f)
@@ -95,8 +94,7 @@ def app():
 
     train = load_model3()
     data_load_state = st.text('Loading data...')
-    cloned_output = get_shapley_value_data(train, replication=replication_avail, dict_map_result=dict_map_result)
-
+    cloned_output = copy.deepcopy(get_shapley_value_data(train, replication=replication_avail, dict_map_result=dict_map_result))
     data_load_state.text("Done Data Loading! (using st.cache)")
     X, shap_values, exval, patient_index, auc_train, auc_test, labels_actual, labels_pred, shap_values_up, len_train, len_test = cloned_output 
     
@@ -105,7 +103,7 @@ def app():
     st.write("### Performance of Surrogate Model")
     st.table(df_res.set_index('class name').astype(str))
 
-    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None}, allow_output_mutation=True, ttl=24 * 3600)
+    @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
     def load_model3():
         shap_values_list = []
         for classname in class_names:
@@ -128,9 +126,9 @@ def app():
         col1, col2, col2111 = st.beta_columns(3)
         with col1:
             st.write('---')
-            temp = shap.Explanation(values=np.array(shap_values), base_values=np.array([exval]*len(X)), data=np.array(X.values), feature_names=X.columns)
+            temp = shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns)
             fig, ax = plt.subplots(figsize=(10,15))
-            shap.plots.beeswarm(shap.Explanation(values=np.array(shap_values), base_values=np.array([exval]*len(X)), data=np.array(X.values), feature_names=X.columns), show=False, max_display=20, order = shap.Explanation(values=np.array(shap_values), base_values=np.array([exval]*len(X)), data=np.array(X.values), feature_names=X.columns).mean(0).abs, plot_size=0.47)# 0.47# , return_objects=True
+            shap.plots.beeswarm(shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns), show=False, max_display=20, order = shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns).mean(0).abs, plot_size=0.47)# 0.47# , return_objects=True
             # shap.plots.beeswarm(temp, order=temp.mean(0).abs, show=False, max_display=20) # , return_objects=True
             # fig.savefig('up_summary_plot1.svg', bbox_inches='tight', dpi=250)
             # fig.savefig('up_summary_plot1.eps', bbox_inches='tight')
@@ -139,8 +137,8 @@ def app():
         with col2:
             st.write('---')
             fig, ax = plt.subplots(figsize=(10,15))
-            temp = shap.Explanation(values=np.array(shap_values), base_values=np.array([exval]*len(X)), data=np.array(X.values), feature_names=X.columns)
-            shap.plots.bar(shap.Explanation(values=np.array(shap_values), base_values=np.array([exval]*len(X)), data=np.array(X.values), feature_names=X.columns).mean(0), show=False, max_display=20, order=shap.Explanation(values=np.array(shap_values), base_values=np.array([exval]*len(X)), data=np.array(X.values), feature_names=X.columns).mean(0).abs)
+            temp = shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns)
+            shap.plots.bar(shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns).mean(0), show=False, max_display=20, order=shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns).mean(0).abs)
             # shap.plots.bar(temp, order=temp.mean(0).abs, show=False, max_display=20)
             # fig.savefig('summary_plot2.pdf', bbox_inches='tight')
             # fig.savefig('summary_plot2.eps', bbox_inches='tight')
@@ -149,8 +147,8 @@ def app():
         with col2111:
             st.write('---')
             fig, ax = plt.subplots(figsize=(10,15))
-            temp = shap.Explanation(values=np.array(shap_values), base_values=np.array([exval]*len(X)), data=np.array(X.values), feature_names=X.columns)
-            shap.plots.bar(shap.Explanation(values=np.array(shap_values), base_values=np.array([exval]*len(X)), data=np.array(X.values), feature_names=X.columns).abs.mean(0), show=False, max_display=20, order=shap.Explanation(values=np.array(shap_values), base_values=np.array([exval]*len(X)), data=np.array(X.values), feature_names=X.columns).mean(0).abs)
+            temp = shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns)
+            shap.plots.bar(shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns).abs.mean(0), show=False, max_display=20, order=shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns).mean(0).abs)
             # shap.plots.bar(temp, order=temp.mean(0).abs, show=False, max_display=20)
             # fig.savefig('summary_plot3.pdf', bbox_inches='tight')
             # fig.savefig('summary_plot3.eps', bbox_inches='tight')
@@ -164,19 +162,19 @@ def app():
     if st.checkbox("Show Dependence Plots"):
         feature_name = st.selectbox('Select a feature for dependence plot', options=list(X.columns))
         try:
-            inds = shap.utils.potential_interactions(shap.Explanation(values=np.array(shap_values), base_values=np.array([exval]*len(X)), data=np.array(X.values), feature_names=X.columns)[:, feature_name], shap.Explanation(values=np.array(shap_values), base_values=np.array([exval]*len(X)), data=np.array(X.values), feature_names=X.columns))
+            inds = shap.utils.potential_interactions(shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns)[:, feature_name], shap.Explanation(values=np.copy(shap_values), base_values=np.array([exval]*len(X)), data=np.copy(X.values), feature_names=X.columns))
         except:
             st.info("Select Another Feature")
         st.write('Top3 Potential Interactions for ***{}***'.format(feature_name))
         col3, col4, col5 = st.beta_columns(3)
         with col3:
-            shap.dependence_plot(feature_name, np.array(shap_values), X, interaction_index=list(X.columns).index(list(X.columns)[inds[0]]))
+            shap.dependence_plot(feature_name, np.copy(shap_values), X.copy(), interaction_index=list(X.columns).index(list(X.columns)[inds[0]]))
             st.pyplot()
         with col4:
-            shap.dependence_plot(feature_name, np.array(shap_values), X, interaction_index=list(X.columns).index(list(X.columns)[inds[1]]))
+            shap.dependence_plot(feature_name, np.copy(shap_values), X.copy(), interaction_index=list(X.columns).index(list(X.columns)[inds[1]]))
             st.pyplot()
         with col5:
-            shap.dependence_plot(feature_name, np.array(shap_values), X, interaction_index=list(X.columns).index(list(X.columns)[inds[2]]))
+            shap.dependence_plot(feature_name, np.copy(shap_values), X.copy(), interaction_index=list(X.columns).index(list(X.columns)[inds[2]]))
             st.pyplot()
 
     
@@ -197,7 +195,7 @@ def app():
     st.write("#### Select the class")
     feature_set_my = st.selectbox("", ['Select']+ class_names, index=0) 
     if not feature_set_my== "Select":
-        @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None}, allow_output_mutation=True, ttl=24 * 3600)
+        @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
         def load_model9():
             with open('saved_models/trainXGB_gpu_{}.data'.format(feature_set_my), 'rb') as f:
                 train = pickle.load(f)
@@ -267,12 +265,12 @@ def app():
         if st.checkbox("Show Prediction Pathways (Feature Clustered)"):
                 # col3, col4, col5 = st.beta_columns(3)
                 # st.write('Typical Prediction Path: Uncertainity (0.2-0.8)')
-                r = shap.decision_plot(exval, np.array(new_shap_values), list(new_X.columns), feature_order='hclust', return_objects=True, show=False)
+                r = shap.decision_plot(exval, np.copy(new_shap_values), list(new_X.columns), feature_order='hclust', return_objects=True, show=False)
                 T = new_X.iloc[(new_labels_pred >= 0) & (new_labels_pred <= 1)]
                 import warnings
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
-                    sh = np.array(new_shap_values)[(new_labels_pred >= 0) & (new_labels_pred <= 1), :]
+                    sh = np.copy(new_shap_values)[(new_labels_pred >= 0) & (new_labels_pred <= 1), :]
                 fig, ax = plt.subplots()
                 shap.decision_plot(exval, sh, T, show=False, feature_order=r.feature_idx, link='logit', return_objects=True, new_base_value=0)
                 st.pyplot(fig)
@@ -283,7 +281,7 @@ def app():
                 #     import warnings
                 #     with warnings.catch_warnings():
                 #         warnings.simplefilter("ignore")
-                #         sh = np.array(new_shap_values)[new_labels_pred >= 0.9, :]
+                #         sh = np.copy(new_shap_values)[new_labels_pred >= 0.9, :]
                 #     shap.decision_plot(exval, sh, T, show=False, link='logit',  feature_order=r.feature_idx, new_base_value=0)
                 #     st.pyplot(fig)
                 # with col5:
@@ -293,7 +291,7 @@ def app():
                 #     import warnings
                 #     with warnings.catch_warnings():
                 #            warnings.simplefilter("ignore")
-                #            sh = np.array(new_shap_values)[new_labels_pred <= 0.1, :]
+                #            sh = np.copy(new_shap_values)[new_labels_pred <= 0.1, :]
                 #     shap.decision_plot(exval, sh, T, show=False, link='logit', feature_order=r.feature_idx, new_base_value=0)
                 #     st.pyplot(fig)
     
@@ -303,12 +301,12 @@ def app():
                 # col31, col41, col51 = st.beta_columns(3)
                 # with col31:
                 # st.write('Typical Prediction Path: Uncertainity (0.2-0.8)')
-                r = shap.decision_plot(exval, np.array(new_shap_values), list(new_X.columns), return_objects=True, show=False)
+                r = shap.decision_plot(exval, np.copy(new_shap_values), list(new_X.columns), return_objects=True, show=False)
                 T = new_X.iloc[(new_labels_pred >= 0) & (new_labels_pred <= 1)]
                 import warnings
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
-                    sh = np.array(new_shap_values)[(new_labels_pred >= 0) & (new_labels_pred <= 1), :]
+                    sh = np.copy(new_shap_values)[(new_labels_pred >= 0) & (new_labels_pred <= 1), :]
                 fig, ax = plt.subplots()
                 shap.decision_plot(exval, sh, T, show=False, feature_order=r.feature_idx, link='logit', return_objects=True, new_base_value=0)
                 st.pyplot(fig)
@@ -319,7 +317,7 @@ def app():
                 #     import warnings
                 #     with warnings.catch_warnings():
                 #         warnings.simplefilter("ignore")
-                #         sh = np.array(new_shap_values)[new_labels_pred >= 0.9, :]
+                #         sh = np.copy(new_shap_values)[new_labels_pred >= 0.9, :]
                 #     shap.decision_plot(exval, sh, T, show=False, link='logit',  feature_order=r.feature_idx, new_base_value=0)
                 #     st.pyplot(fig)
                 # with col51:
@@ -329,6 +327,6 @@ def app():
                 #     import warnings
                 #     with warnings.catch_warnings():
                 #            warnings.simplefilter("ignore")
-                #            sh = np.array(new_shap_values)[new_labels_pred <= 0.1, :]
+                #            sh = np.copy(new_shap_values)[new_labels_pred <= 0.1, :]
                 #     shap.decision_plot(exval, sh, T, show=False, link='logit', feature_order=r.feature_idx, new_base_value=0)
                 #     st.pyplot(fig)
