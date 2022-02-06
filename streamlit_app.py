@@ -54,25 +54,25 @@ st.markdown(
 
 import copy
 
-import psutil
-# gives a single float value
-mem = psutil.virtual_memory()
-cols = st.beta_columns(4)
-with cols[0]:
-    st.write("Available Memory:", round(mem.available/1e9,2), "GB")
-    st.write('Fraction of RAM usage:', round(psutil.virtual_memory().percent, 2))
-
-with cols[1]:
-    st.write('Available memory fraction', round(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total, 2))
-    st.write("Load Average: ***" +  ', '.join([str(round(i, 2)) for i in psutil.getloadavg()]) + '***')
-
-with cols[2]:
-    st.write("Total CPUS:", psutil.cpu_count())
-    st.write("CPU percent usage", round(psutil.cpu_percent(interval=None), 2))
-
-with cols[3]:
-    st.write("Cores utilization: ***" + ', '.join([str(round((i * 100) / psutil.cpu_count(), 2)) for i in psutil.getloadavg()]) + '***')
-    # st.write("All Memory USE", dict(psutil.virtual_memory()._asdict()))
+### import psutil
+### # gives a single float value
+### mem = psutil.virtual_memory()
+### cols = st.beta_columns(4)
+### with cols[0]:
+###     st.write("Available Memory:", round(mem.available/1e9,2), "GB")
+###     st.write('Fraction of RAM usage:', round(psutil.virtual_memory().percent, 2))
+###
+### with cols[1]:
+###     st.write('Available memory fraction', round(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total, 2))
+###     st.write("Load Average: ***" +  ', '.join([str(round(i, 2)) for i in psutil.getloadavg()]) + '***')
+###
+### with cols[2]:
+###     st.write("Total CPUS:", psutil.cpu_count())
+###     st.write("CPU percent usage", round(psutil.cpu_percent(interval=None), 2))
+###
+### with cols[3]:
+###     st.write("Cores utilization: ***" + ', '.join([str(round((i * 100) / psutil.cpu_count(), 2)) for i in psutil.getloadavg()]) + '***')
+###     # st.write("All Memory USE", dict(psutil.virtual_memory()._asdict()))
 
 
 import gc
