@@ -3,6 +3,11 @@ version: '3'
 services:
     app:
         image: gwas-streamlit-docker
+        deploy:
+          resources:
+            limits:
+              cpus: 2
+              memory: 768M
         build:
             dockerfile: ./Dockerfile
             context: .
