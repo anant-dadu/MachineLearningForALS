@@ -85,6 +85,32 @@ gc.enable()
 # you can have the percentage of used RAM
 # you can calculate percentage of available memory
 
+google_analytics_js = """
+<!-- Default Statcounter code for Machine Learning for ALS
+https://share.streamlit.io/anant-dadu/machinelearningforals/main
+-->
+<script type="text/javascript">
+var sc_project=12714941; 
+var sc_invisible=1; 
+var sc_security="84024843"; 
+</script>
+<script type="text/javascript"
+src="https://www.statcounter.com/counter/counter.js"
+async></script>
+<noscript><div class="statcounter"><a title="Web Analytics"
+href="https://statcounter.com/" target="_blank"><img
+class="statcounter"
+src="https://c.statcounter.com/12714941/0/84024843/1/"
+alt="Web Analytics"
+referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
+<!-- End of Statcounter Code -->
+"""
+# google_analytics_js = """<a title="Real Time Web Analytics" href="http://clicky.com/101347652"><img alt="Clicky" src="//static.getclicky.com/media/links/badge.gif" border="0" /></a>
+# <script async src="//static.getclicky.com/101347652.js"></script>
+# <noscript><p><img alt="Clicky" width="1" height="1" src="//in.getclicky.com/101347652ns.gif" /></p></noscript>"""
+st.components.v1.html(google_analytics_js)
+
+
 ##TODO: UPDATE TITLE
 st.write('# Machine Learning for ALS') 
 app.add_app("Select", select.app)
