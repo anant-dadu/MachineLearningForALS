@@ -85,6 +85,19 @@ gc.enable()
 # you can have the percentage of used RAM
 # you can calculate percentage of available memory
 
+
+
+
+##TODO: UPDATE TITLE
+st.write('# Machine Learning for ALS') 
+app.add_app("Select", select.app)
+app.add_app("Scientific background", streamlit_shapley_component.app)
+app.add_app("Predict Patient ALS Subtype", streamlit_prediction_component_multiclass.app)
+##TODO: Add any apps you like
+app.add_app("Explore the ALS subtype topological space", topological_space.app)
+app.run()
+gc.collect()
+
 google_analytics_js = """
 <!-- Default Statcounter code for Machine Learning for ALS
 https://share.streamlit.io/anant-dadu/machinelearningforals/main
@@ -109,14 +122,3 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
 # <script async src="//static.getclicky.com/101347652.js"></script>
 # <noscript><p><img alt="Clicky" width="1" height="1" src="//in.getclicky.com/101347652ns.gif" /></p></noscript>"""
 st.components.v1.html(google_analytics_js)
-
-
-##TODO: UPDATE TITLE
-st.write('# Machine Learning for ALS') 
-app.add_app("Select", select.app)
-app.add_app("Scientific background", streamlit_shapley_component.app)
-app.add_app("Predict Patient ALS Subtype", streamlit_prediction_component_multiclass.app)
-##TODO: Add any apps you like
-app.add_app("Explore the ALS subtype topological space", topological_space.app)
-app.run()
-gc.collect()
