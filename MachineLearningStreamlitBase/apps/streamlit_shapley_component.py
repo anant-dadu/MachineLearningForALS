@@ -101,8 +101,8 @@ def app():
     X, shap_values, exval, patient_index, auc_train, auc_test, labels_actual, labels_pred, shap_values_up, len_train, len_test = cloned_output 
     
 
-    st.write("## Results")
-    st.write("### Performance of Surrogate Model")
+    # st.write("## Results")
+    # st.write("### Performance of Surrogate Model")
     st.table(df_res.set_index('class name').astype(str))
 
     @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None}, allow_output_mutation=True, ttl=24 * 3600)

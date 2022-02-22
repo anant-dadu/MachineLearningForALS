@@ -90,12 +90,27 @@ gc.enable()
 
 ##TODO: UPDATE TITLE
 st.write('# Machine Learning for ALS') 
-app.add_app("Select", select.app)
+app.add_app("Home", select.app)
 app.add_app("Scientific background", streamlit_shapley_component.app)
 app.add_app("Predict Patient ALS Subtype", streamlit_prediction_component_multiclass.app)
 ##TODO: Add any apps you like
 app.add_app("Explore the ALS subtype topological space", topological_space.app)
 app.run()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 gc.collect()
 
 google_analytics_js = """
