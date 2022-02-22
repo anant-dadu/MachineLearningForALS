@@ -62,34 +62,35 @@ class MultiApp:
         #     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">',
         #     unsafe_allow_html=True,
         # )
-        query_params = st.experimental_get_query_params()
-        tabs = [self.apps[0]['title'], self.apps[1]['title'], self.apps[2]['title'], self.apps[3]['title']]
-        if "tab" in query_params:
-            active_tab = query_params["tab"][0]
-        else:
-            active_tab = tabs[0]# "Home"
+        # query_params = st.experimental_get_query_params()
+        # tabs = [self.apps[0]['title'], self.apps[1]['title'], self.apps[2]['title'], self.apps[3]['title']]
+        # if "tab" in query_params:
+        #     active_tab = query_params["tab"][0]
+        # else:
+        #     active_tab = tabs[0]# "Home"
 
-        if active_tab not in tabs:
-            st.experimental_set_query_params(tab=tabs[0])
-            active_tab = tabs[0] # "Home"
+        # if active_tab not in tabs:
+        #     st.experimental_set_query_params(tab=tabs[0])
+        #     active_tab = tabs[0] # "Home"
+        # # # <a class="nav-link{' active' if t == active_tab else ''}" href="/?tab={t}">{t}</a>
 
-        li_items = "".join(
-            f"""
-            <li class="nav-item">
-                <a class="nav-link{' active' if t == active_tab else ''}" href="/?tab={t}">{t}</a>
-            </li>
-            """
-            for t in tabs
-        )
-        tabs_html = f"""
-            <ul class="nav nav-tabs">
-            {li_items}
-            </ul>
-        """
-
-        st.markdown(tabs_html, unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
-        app = self.apps[tabs.index(active_tab)]
+        # li_items = "".join(
+        #     f"""
+        #     <li class="nav-item">
+        #         <a class="nav-link{' active' if t == active_tab else ''}" href="/?tab={t}">{t}</a>
+        #     </li>
+        #     """
+        #     for t in tabs
+        # )
+        # tabs_html = f"""
+        #     <ul class="nav nav-tabs">
+        #     {li_items}
+        #     </ul>
+        # """
+        # st.write(f'## {active_tab}')
+        # st.markdown(tabs_html, unsafe_allow_html=True)
+        # st.markdown("<br>", unsafe_allow_html=True)
+        # app = self.apps[tabs.index(active_tab)]
         # if active_tab == tabs[0]:
         #     app = self.apps[0]
         #     st.write("Welcome to my lovely page!")
@@ -107,6 +108,29 @@ class MultiApp:
         # else:
         #     st.error("Something has gone terribly wrong.")
 
+        from st_btn_select import st_btn_select
+
+        # page = st_btn_select(
+        #     # The different pages
+        #     ('home', 'about', 'docs', 'playground'),
+        #     # Enable navbar
+        #     nav=True,
+        #     # You can pass a formatting function. Here we capitalize the options
+        #     format_func=lambda name: name.capitalize(),
+        # )
+
+        app = st_btn_select(
+            # The different pages
+            self.apps,
+            # Enable navbar
+            # nav=True,
+            # You can pass a formatting function. Here we capitalize the options
+            format_func=lambda app: '{}'.format(app['title']),
+        )
+
+        # Display the right things according to the page
+        # if page == 'home':
+        #     st.write('HOMEPAGE')
 
 
 
