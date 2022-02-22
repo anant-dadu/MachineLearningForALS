@@ -57,11 +57,11 @@ class MultiApp:
         # import streamlit as st
         # st.write(self.apps)
 
-        st.markdown(
-            # '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">',
-            '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">',
-            unsafe_allow_html=True,
-        )
+        # st.markdown(
+        #     # '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">',
+        #     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">',
+        #     unsafe_allow_html=True,
+        # )
         query_params = st.experimental_get_query_params()
         tabs = [self.apps[0]['title'], self.apps[1]['title'], self.apps[2]['title'], self.apps[3]['title']]
         if "tab" in query_params:
