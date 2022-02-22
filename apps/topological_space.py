@@ -33,7 +33,7 @@ def app():
 
     
     if len(color_discrete_map) < 10:
-        col1, col2 = st.beta_columns(2)
+        col1, col2 = st.columns(2)
         with col1:
             st.write('### Discovery Cohort')
             fig = px.scatter_3d(umap_org, x='UMAP_3_1', y='UMAP_3_2', z='UMAP_3_3', color=select_color, color_discrete_map=color_discrete_map, opacity=1, size=[4]*len(umap_org), height=600, width=600)
@@ -58,7 +58,7 @@ def app():
                 ))
             st.plotly_chart(fig, use_container_width=True)
     else:
-        col1, col2 = st.beta_columns(2)
+        col1, col2 = st.columns(2)
         with col1:
             st.write('### Discovery Cohort')
             fig = px.scatter_3d(umap_org, x='UMAP_3_1', y='UMAP_3_2', z='UMAP_3_3', color=select_color,  opacity=1, size=[4]*len(umap_org), height=600, width=600)

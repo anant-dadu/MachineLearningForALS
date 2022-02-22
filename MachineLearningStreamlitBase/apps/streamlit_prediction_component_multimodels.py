@@ -67,7 +67,7 @@ def app():
 
     st.write('--'*10)
     st.write('##### Note: X denoted NA values')
-    col1, col2, col3, col4 = st.beta_columns(4)
+    col1, col2, col3, col4 = st.columns(4)
     for i in range(0, len(categorical_columns), 4):
         with col1:
             if (i+0) >= len(categorical_columns):
@@ -138,7 +138,7 @@ def app():
         color_discrete_map[classname] = color_discrete_map_list[e] 
     
     
-    col01, col02 = st.beta_columns(2)
+    col01, col02 = st.columns(2)
     with col01:
         st.write('### Prediction on actual feature values')
         st.code(X_new.loc[select_patient, :].fillna('X')) 

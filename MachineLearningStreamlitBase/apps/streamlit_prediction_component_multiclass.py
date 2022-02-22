@@ -110,7 +110,7 @@ def app():
     
     st.write('--'*10)
     st.write('##### Note: X denoted NA values')
-    col1, col2, col3, col4 = st.beta_columns(4)
+    col1, col2, col3, col4 = st.columns(4)
     for i in range(0, len(categorical_columns), 4):
         with col1:
             if (i+0) >= len(categorical_columns):
@@ -181,7 +181,7 @@ def app():
         color_discrete_map[classname] = color_discrete_map_list[e] 
     
     show_whatif = st.checkbox("Enable what-if analysis")
-    col01, col02 = st.beta_columns(2)
+    col01, col02 = st.columns(2)
     with col01:
         st.write('### Prediction on actual feature values')
         # st.write(X_new.loc[select_patient, :])
@@ -335,7 +335,7 @@ def app():
     # st.write('### Force Plots')
     # patient_name = st.selectbox('Select patient id', options=list(patient_index))
     # sample_id = patient_index.index(patient_name)
-    # col8, col9 = st.beta_columns(2)
+    # col8, col9 = st.columns(2)
     # with col8:
     #     st.info('Actual Label: ***{}***'.format('PD' if labels_actual[sample_id]==1 else 'HC'))
     #     st.info('Predicted PD class Probability: ***{}***'.format(round(float(labels_pred[sample_id]), 2)))
@@ -343,7 +343,7 @@ def app():
     #     shap.force_plot(exval, shap_values[sample_id,:], X.iloc[sample_id,:], show=False, matplotlib=True)
     #     st.pyplot()
     
-    # col10, col11 = st.beta_columns(2)
+    # col10, col11 = st.columns(2)
     # with col10:
     #     fig, ax = plt.subplots()
     #     shap.decision_plot(exval, shap_values[sample_id], X.iloc[sample_id], link='logit', highlight=0, new_base_value=0)

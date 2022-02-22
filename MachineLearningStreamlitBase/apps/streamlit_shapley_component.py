@@ -94,16 +94,16 @@ def app():
         return train
 
     train = load_model3()
-    data_load_state = st.text('Loading data...')
+    # data_load_state = st.text('Loading data...')
     cloned_output = get_shapley_value_data(train, replication=replication_avail, dict_map_result=dict_map_result)
 
-    data_load_state.text("Done Data Loading! (using st.cache)")
+    # data_load_state.text("Done Data Loading! (using st.cache)")
     X, shap_values, exval, patient_index, auc_train, auc_test, labels_actual, labels_pred, shap_values_up, len_train, len_test = cloned_output 
     
 
     # st.write("## Results")
     # st.write("### Performance of Surrogate Model")
-    st.table(df_res.set_index('class name').astype(str))
+    # st.table(df_res.set_index('class name').astype(str))
 
     @st.cache(hash_funcs={"MyUnhashableClass": lambda _: None}, allow_output_mutation=True, ttl=24 * 3600)
     def load_model3():
@@ -125,7 +125,7 @@ def app():
     st.write("""Shows top-11 features that have the most significant impact on the classification model.""")
     if st.checkbox("Show Summary Plot"):
         shap_type = 'trainXGB'
-        col1, col2, col2111 = st.beta_columns(3)
+        col1, col2, col2111 = st.columns(3)
         with col1:
             st.write('---')
             temp = shap.Explanation(values=np.array(shap_values), base_values=np.array([exval]*len(X)), data=np.array(X.values), feature_names=X.columns)
@@ -168,7 +168,7 @@ def app():
         except:
             st.info("Select Another Feature")
         st.write('Top3 Potential Interactions for ***{}***'.format(feature_name))
-        col3, col4, col5 = st.beta_columns(3)
+        col3, col4, col5 = st.columns(3)
         with col3:
             shap.dependence_plot(feature_name, np.array(shap_values), X, interaction_index=list(X.columns).index(list(X.columns)[inds[0]]))
             st.pyplot()
@@ -208,7 +208,7 @@ def app():
         cloned_output = get_shapley_value_data(train, replication=replication_avail, dict_map_result=dict_map_result)
         data_load_state.text("Done Data Loading! (using st.cache)")
         X, shap_values, exval, patient_index, auc_train, auc_test, labels_actual, labels_pred, shap_values_up, len_train, len_test = cloned_output 
-        col0, col00 = st.beta_columns(2)
+        col0, col00 = st.columns(2)
         with col0:
             st.write("### Data Statistics")
             st.info ('Total Features: {}'.format(X.shape[1]))
@@ -219,7 +219,7 @@ def app():
             st.info ('AUC Discovery Cohort: {}'.format(round(auc_train,2)))
             st.info ('AUC Replication Cohort: {}'.format( round(auc_test,2)))
 
-        col01, col02 = st.beta_columns(2)
+        col01, col02 = st.columns(2)
         with col01:
             st.write("### Discovery Cohort Confusion Matrix")
             Z = sklearn.metrics.confusion_matrix(labels_actual[:len_train], np.array(labels_pred[:len_train])>0.5)
@@ -240,7 +240,7 @@ def app():
         if misclassified[len_train:].sum() == 0:
             st.info('No Misclassified Examples!!!')
         elif st.checkbox("Show Misclassifies Pathways"):
-            col6, col7 = st.beta_columns(2)
+            col6, col7 = st.columns(2)
             with col6:
                 st.info('Misclassifications (test): {}/{}'.format(misclassified[len_train:].sum(), len_test))
                 fig, ax = plt.subplots()
@@ -265,7 +265,7 @@ def app():
         """)
         st.write('### Pathways for Prediction (Hierarchical Clustering)')
         if st.checkbox("Show Prediction Pathways (Feature Clustered)"):
-                # col3, col4, col5 = st.beta_columns(3)
+                # col3, col4, col5 = st.columns(3)
                 # st.write('Typical Prediction Path: Uncertainity (0.2-0.8)')
                 r = shap.decision_plot(exval, np.array(new_shap_values), list(new_X.columns), feature_order='hclust', return_objects=True, show=False)
                 T = new_X.iloc[(new_labels_pred >= 0) & (new_labels_pred <= 1)]
@@ -300,7 +300,7 @@ def app():
 
         st.write('### Pathways for Prediction (Feature Importance)')
         if st.checkbox("Show Prediction Pathways (Feature Importance)"):
-                # col31, col41, col51 = st.beta_columns(3)
+                # col31, col41, col51 = st.columns(3)
                 # with col31:
                 # st.write('Typical Prediction Path: Uncertainity (0.2-0.8)')
                 r = shap.decision_plot(exval, np.array(new_shap_values), list(new_X.columns), return_objects=True, show=False)
