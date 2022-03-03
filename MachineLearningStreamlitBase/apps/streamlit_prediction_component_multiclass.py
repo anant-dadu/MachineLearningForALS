@@ -244,7 +244,7 @@ def app():
         t1 = pd.DataFrame(X.loc[select_patient, :]).T
         t2 = pd.DataFrame(X_new.loc[select_patient, :].fillna('X')).T
         shap_values_train = explainer_train.shap_values(t1)
-        shap.force_plot(exval, shap_values_train, t1, show=False, matplotlib=True)
+        shap.force_plot(exval, shap_values_train, t1, show=False, matplotlib=True, link='logit')
         st.pyplot()
         fig, ax = plt.subplots()
         t2.columns = t2.columns.map(lambda x: feature_mapping.get(x, x))
@@ -322,7 +322,7 @@ def app():
             explainer_train = shap.TreeExplainer(M_dict[predicted_class])
             t1 = dfl.copy()
             shap_values_train = explainer_train.shap_values(t1)
-            shap.force_plot(exval, shap_values_train, t1, show=False, matplotlib=True)
+            shap.force_plot(exval, shap_values_train, t1, show=False, link='logit', matplotlib=True)
             st.pyplot()
             fig, ax = plt.subplots()
             ndfl.columns = ndfl.columns.map(lambda x: feature_mapping.get(x, x))
