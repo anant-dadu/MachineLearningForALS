@@ -282,6 +282,8 @@ def app():
         t1.columns = t1.columns.map(lambda x: feature_mapping.get(x, x).split(' (')[0])
         # st.write(t1)
         shap.force_plot(exval, shap_values_train, t1.round(2), show=False, matplotlib=True, link='logit', contribution_threshold=0.10)
+        plt.savefig("/app/mar4_force_plot.pdf", bbox_inches='tight')
+        plt.savefig("/app/mar4_force_plot.eps", bbox_inches='tight')
         st.pyplot()
         fig, ax = plt.subplots()
         t2.columns = t2.columns.map(lambda x: feature_mapping.get(x, x))
@@ -289,6 +291,8 @@ def app():
         # st.write(feature_mapping)
         r = shap.decision_plot(exval, shap_values_train, t2.round(2), link='logit', return_objects=True, new_base_value=0, highlight=0)
         st.pyplot(fig)
+        fig.savefig('/app/mar4_decisionplot.pdf', bbox_inches='tight')
+        fig.savefig('/app/mar4_decisionplot.eps', bbox_inches='tight')
         # fig.savefig('/app/new_shap_values.pdf', bbox_inches='tight')
     if show_whatif:
         with col02:
@@ -298,7 +302,7 @@ def app():
                 rval = {j:i for i,j in val.items()}
                 ndfl[key] = ndfl[key].map(lambda x: rval.get(x, x))
             st.write('### Prediction with what-if analysis')
-
+            t2 = ndfl.copy().fillna('Not available')
             feature_print_what = ndfl.iloc[0].fillna('Not available')
             feature_print_what.index = feature_print_what.index.map(lambda x: feature_mapping[x])
             feature_print_what = feature_print_what.reset_index()
@@ -361,8 +365,10 @@ def app():
             explainer_train = shap.TreeExplainer(M_dict[predicted_class])
 
 
-            shap_values_train = explainer_train.shap_values(t1)
             t1 = dfl.copy()
+            shap_values_train = explainer_train.shap_values(t1)
+            # t1.columns = t1.columns.map(lambda x: feature_mapping.get(x, x).split(' (')[0])
+            t1 = t2.copy()  # ndfl.copy().fillna('Not available')
             t1.columns = t1.columns.map(lambda x: feature_mapping.get(x, x).split(' (')[0])
             shap.force_plot(exval, shap_values_train, t1.round(2), show=False, matplotlib=True, link='logit', contribution_threshold=0.05)
             st.pyplot()
@@ -374,8 +380,9 @@ def app():
             # fig.savefig('/app/force_plot_new_shap_values_whatif.pdf', bbox_inches='tight')
             # fig.savefig('/app/force_plot_new_shap_values_whatif.eps', bbox_inches='tight')
             fig, ax = plt.subplots()
-            ndfl.columns = ndfl.columns.map(lambda x: feature_mapping.get(x, x))
-            _ = shap.decision_plot(exval, shap_values_train, ndfl.fillna('Not available').round(2), link='logit', feature_order=r.feature_idx, return_objects=True, new_base_value=0, highlight=0)
+            t2.columns = t2.columns.map(lambda x: feature_mapping.get(x, x))
+            # ndfl.columns = ndfl.columns.map(lambda x: feature_mapping.get(x, x))
+            _ = shap.decision_plot(exval, shap_values_train, t2.round(2), link='logit', feature_order=r.feature_idx, return_objects=True, new_base_value=0, highlight=0)
             fig.savefig('/app/mar4_decisionplot.pdf', bbox_inches='tight')
             fig.savefig('/app/mar4_decisionplot.eps', bbox_inches='tight')
             st.pyplot(fig)
