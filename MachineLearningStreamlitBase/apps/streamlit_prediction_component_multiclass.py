@@ -83,7 +83,7 @@ def app():
     
     categorical_columns = []
     numerical_columns = []
-    X_new = X.fillna('X')
+    X_new = X.fillna('Not available')
     for col in X_new.columns:
         # if len(X_new[col].value_counts()) <= 10:
         if col_dict_map.get(col, None) is not None:
@@ -142,7 +142,7 @@ def app():
             new_feature_input[c4].append(col_dict_map[c4].get(f4, np.nan))
     
     for col in numerical_columns:
-        X_new[col] = X_new[col].map(lambda x: float(x) if not x=='X' else np.nan)
+        X_new[col] = X_new[col].map(lambda x: float(x) if not x=='Not available' else np.nan)
     for i in range(0, len(numerical_columns), 4):
         with col1:
             if (i+0) >= len(numerical_columns):
@@ -184,30 +184,65 @@ def app():
     col01, col02 = st.columns(2)
     with col01:
         st.write('### Prediction on actual feature values')
-        # st.write(X_new.loc[select_patient, :])
-        # X_new.to_csv('/app/HELLOJI.csv', index=False)
-        # print ('oHELKLO')
-        # X_new.loc[select_patient, :] =  [np.nan, 'definite', 'bulbar', 'bulbar', np.nan, 2, 92, 75, 0, 72.833, 314]
-        feature_print = X_new.loc[select_patient, :].fillna('X')
-        # feature_print.iloc[:, 1] = ['never', 'definite', 'bulbar', 'bulbar', 'X', '2']
-        feature_print.index = feature_print.index.map(lambda x: feature_mapping[x])
-        feature_print = feature_print.reset_index()
-        feature_print.columns = ["Feature Name", "Feature Value"]
-        # feature_print.
+        if not show_whatif:
+            dfl = pd.DataFrame(new_feature_input)
+            ndfl = dfl.copy()
+            for key, val in col_dict_map.items():
+                rval = {j: i for i, j in val.items()}
+                ndfl[key] = ndfl[key].map(lambda x: rval.get(x, x))
+            # st.write('### Prediction with what-if analysis')
+
+            feature_print_what = ndfl.iloc[0].fillna('Not available')
+            feature_print_what.index = feature_print_what.index.map(lambda x: feature_mapping[x])
+            feature_print_what = feature_print_what.reset_index()
+            feature_print_what.columns = ["Feature Name", "Feature Value"]
+            feature_print = feature_print_what.copy()
+            dfl = dfl[X.columns].replace('Not available', np.nan)
+            predicted_prob = defaultdict(list)
+            predicted_class = -1
+            max_val = -1
+            for key, val in M_dict.items():
+                predicted_prob['predicted_probability'].append(
+                    val.predict(xgb.DMatrix(dfl.iloc[0, :].values.reshape(1, -1), feature_names=dfl.columns))[0])
+                predicted_prob['classname'].append(key)
+                if predicted_prob['predicted_probability'][-1] > max_val:
+                    predicted_class = key
+                    max_val = predicted_prob['predicted_probability'][-1]
+            K = pd.DataFrame(predicted_prob)
+            K['predicted_probability'] = K['predicted_probability'] / K['predicted_probability'].sum()
+            K['color'] = ['zed' if i == predicted_class else 'red' for i in list(predicted_prob['classname'])]
+            t1 = dfl.copy()
+            t2 = ndfl.copy().fillna('Not available')
+        else:
+            # st.write(X_new.loc[select_patient, :])
+            # X_new.to_csv('/app/HELLOJI.csv', index=False)
+            # print ('oHELKLO')
+            # X_new.loc[select_patient, :] =  [np.nan, 'definite', 'bulbar', 'bulbar', np.nan, 2, 92, 75, 0, 72.833, 314]
+            feature_print = X_new.loc[select_patient, :].fillna('Not available')
+            # feature_print.iloc[:, 1] = ['never', 'definite', 'bulbar', 'bulbar', 'Not available', '2']
+            feature_print.index = feature_print.index.map(lambda x: feature_mapping[x])
+            feature_print = feature_print.reset_index()
+            feature_print.columns = ["Feature Name", "Feature Value"]
+            # feature_print.
+            predicted_prob = defaultdict(list)
+            predicted_class = -1
+            max_val = -1
+            for key, val in M_dict.items():
+                predicted_prob['predicted_probability'].append(
+                    val.predict(xgb.DMatrix(X.loc[select_patient, :].values.reshape(1, -1), feature_names=X.columns))[
+                        0])
+                predicted_prob['classname'].append(key)
+                if predicted_prob['predicted_probability'][-1] > max_val:
+                    predicted_class = key
+                    max_val = predicted_prob['predicted_probability'][-1]
+            K = pd.DataFrame(predicted_prob)
+            K['predicted_probability'] = K['predicted_probability'] / K['predicted_probability'].sum()
+            K['color'] = ['zed' if i == predicted_class else 'red' for i in list(predicted_prob['classname'])]
+            t1 = pd.DataFrame(X.loc[select_patient, :]).T
+            t2 = pd.DataFrame(X_new.loc[select_patient, :].fillna('Not available')).T
 
         st.table(feature_print.set_index("Feature Name").astype(str))
-        predicted_prob = defaultdict(list)
-        predicted_class = -1
-        max_val = -1
-        for key, val in M_dict.items():
-            predicted_prob['predicted_probability'].append(val.predict(xgb.DMatrix(X.loc[select_patient, :].values.reshape(1, -1), feature_names=X.columns))[0])
-            predicted_prob['classname'].append(key)
-            if predicted_prob['predicted_probability'][-1] > max_val:
-                predicted_class = key
-                max_val = predicted_prob['predicted_probability'][-1] 
-        K = pd.DataFrame(predicted_prob)
-        K['predicted_probability'] = K['predicted_probability'] / K['predicted_probability'].sum()
-        K['color'] = ['zed' if i==predicted_class else 'red' for i in list(predicted_prob['classname']) ]
+
         # fig = px.bar(K, x='predicted_probability', y='classname', color='color', width=500, height=400, orientation='h')
         # # fig = px.bar(K, y='predicted_probability', x=sorted(list(predicted_prob['classname'])), width=500, height=400)
         # fig.update_layout(
@@ -241,14 +276,18 @@ def app():
         new_train = load_model5()
         exval = new_train[2]['explainer_train'] 
         explainer_train = shap.TreeExplainer(M_dict[predicted_class])
-        t1 = pd.DataFrame(X.loc[select_patient, :]).T
-        t2 = pd.DataFrame(X_new.loc[select_patient, :].fillna('X')).T
+
         shap_values_train = explainer_train.shap_values(t1)
-        shap.force_plot(exval, shap_values_train, t1, show=False, matplotlib=True, link='logit')
+        t1 = t2.copy() # ndfl.copy().fillna('Not available')
+        t1.columns = t1.columns.map(lambda x: feature_mapping.get(x, x).split(' (')[0])
+        # st.write(t1)
+        shap.force_plot(exval, shap_values_train, t1.round(2), show=False, matplotlib=True, link='logit', contribution_threshold=0.10)
         st.pyplot()
         fig, ax = plt.subplots()
         t2.columns = t2.columns.map(lambda x: feature_mapping.get(x, x))
-        r = shap.decision_plot(exval, shap_values_train, t2, link='logit', return_objects=True, new_base_value=0, highlight=0)
+        # st.write(t2.columns)
+        # st.write(feature_mapping)
+        r = shap.decision_plot(exval, shap_values_train, t2.round(2), link='logit', return_objects=True, new_base_value=0, highlight=0)
         st.pyplot(fig)
         # fig.savefig('/app/new_shap_values.pdf', bbox_inches='tight')
     if show_whatif:
@@ -260,7 +299,7 @@ def app():
                 ndfl[key] = ndfl[key].map(lambda x: rval.get(x, x))
             st.write('### Prediction with what-if analysis')
 
-            feature_print_what = ndfl.iloc[0].fillna('X')
+            feature_print_what = ndfl.iloc[0].fillna('Not available')
             feature_print_what.index = feature_print_what.index.map(lambda x: feature_mapping[x])
             feature_print_what = feature_print_what.reset_index()
             feature_print_what.columns = ["Feature Name", "Feature Value"] 
@@ -274,7 +313,7 @@ def app():
             # st.table(feature_print)
 
             st.table(feature_print_what.astype(str).set_index("Feature Name").style.apply(lambda x: ['background: yellow' if (x.name in selected) else 'background: lightgreen' for i in x], axis=1))
-            dfl = dfl[X.columns].replace('X', np.nan)
+            dfl = dfl[X.columns].replace('Not available', np.nan)
             predicted_prob = defaultdict(list)
             predicted_class = -1
             max_val = -1
@@ -320,15 +359,25 @@ def app():
             new_train = load_model6()
             exval = new_train[2]['explainer_train']
             explainer_train = shap.TreeExplainer(M_dict[predicted_class])
-            t1 = dfl.copy()
+
+
             shap_values_train = explainer_train.shap_values(t1)
-            shap.force_plot(exval, shap_values_train, t1, show=False, link='logit', matplotlib=True)
+            t1 = dfl.copy()
+            t1.columns = t1.columns.map(lambda x: feature_mapping.get(x, x).split(' (')[0])
+            shap.force_plot(exval, shap_values_train, t1.round(2), show=False, matplotlib=True, link='logit', contribution_threshold=0.05)
             st.pyplot()
+            plt.savefig("/app/mar4_force_plot.pdf", bbox_inches='tight')
+            plt.savefig("/app/mar4_force_plot.eps", bbox_inches='tight')
+
+            # _ = shap.force_plot(exval, shap_values_train, t1, matplotlib=True, show=False, link='logit')
+            # st.pyplot(fig)
+            # fig.savefig('/app/force_plot_new_shap_values_whatif.pdf', bbox_inches='tight')
+            # fig.savefig('/app/force_plot_new_shap_values_whatif.eps', bbox_inches='tight')
             fig, ax = plt.subplots()
             ndfl.columns = ndfl.columns.map(lambda x: feature_mapping.get(x, x))
-            _ = shap.decision_plot(exval, shap_values_train, ndfl.fillna('X'), link='logit', feature_order=r.feature_idx, return_objects=True, new_base_value=0, highlight=0)
-            # fig.savefig('/app/new_shap_values_whatif.pdf', bbox_inches='tight')
-            # fig.savefig('/app/new_shap_values_whatif.eps', bbox_inches='tight')
+            _ = shap.decision_plot(exval, shap_values_train, ndfl.fillna('Not available').round(2), link='logit', feature_order=r.feature_idx, return_objects=True, new_base_value=0, highlight=0)
+            fig.savefig('/app/mar4_decisionplot.pdf', bbox_inches='tight')
+            fig.savefig('/app/mar4_decisionplot.eps', bbox_inches='tight')
             st.pyplot(fig)
 
 
