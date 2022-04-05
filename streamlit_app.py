@@ -133,7 +133,4 @@ alt="Web Analytics"
 referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
 <!-- End of Statcounter Code -->
 """
-# google_analytics_js = """<a title="Real Time Web Analytics" href="http://clicky.com/101347652"><img alt="Clicky" src="//static.getclicky.com/media/links/badge.gif" border="0" /></a>
-# <script async src="//static.getclicky.com/101347652.js"></script>
-# <noscript><p><img alt="Clicky" width="1" height="1" src="//in.getclicky.com/101347652ns.gif" /></p></noscript>"""
 st.components.v1.html(google_analytics_js)
