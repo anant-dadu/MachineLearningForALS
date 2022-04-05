@@ -89,7 +89,7 @@ gc.enable()
 
 
 ##TODO: UPDATE TITLE
-st.write('# Machine Learning for ALS') 
+# st.write('# Machine Learning for ALS')
 app.add_app("Home", select.app)
 app.add_app("Scientific background", streamlit_shapley_component.app)
 app.add_app("Predict Patient ALS Subtype", streamlit_prediction_component_multiclass.app)
